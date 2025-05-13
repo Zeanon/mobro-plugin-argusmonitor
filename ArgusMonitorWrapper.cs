@@ -37,7 +37,8 @@ public static class ArgusMonitorWrapper
     public static extern void SetSensorEnabled(IntPtr t, StringBuilder sb, int enabled);
     #endregion
 
-    public static List<Sensor> _GetSensorData(IntPtr t) {
+    public static List<Sensor> _GetSensorData(IntPtr t)
+    {
         ParseSensorData(t);
         int n = GetDataLength(t);
         StringBuilder sb = new StringBuilder(n);
@@ -48,22 +49,25 @@ public static class ArgusMonitorWrapper
 
         string[] sensors_split = sensor_data.Split("^");
 
-        for (int i = 0; i < sensors_split.Length; ++i) {
+        for (int i = 0; i < sensors_split.Length; ++i)
+        {
             string sensor_string = sensors_split[i];
-            if (sensor_string.Length == 0) {
+            if (sensor_string.Length == 0)
+            {
                 continue;
             }
 
             string[] sensor_values = sensor_string.Split("|");
 
-            if (sensor_values.Length < 5) {
+            if (sensor_values.Length < 5 || sensor_values[2] == "Invalid")
+            {
                 continue;
             }
 
             Sensor sensor = new Sensor(
                 SanitizeId("ArgusMonitor" + sensor_values[0] + sensor_values[2] + sensor_values[3]),
                 sensor_values[0],
-                float.Parse(sensor_values[1]) / 1000000,
+                sensor_values[1],
                 sensor_values[2],
                 sensor_values[3],
                 SanitizeId("ArgusMonitor" + sensor_values[4]),
@@ -76,7 +80,8 @@ public static class ArgusMonitorWrapper
         return sensors;
     }
 
-    public static bool CheckData(IntPtr t) {
+    public static bool CheckData(IntPtr t)
+    {
         ParseSensorData(t);
         return GetDataLength(t) > 0;
     }

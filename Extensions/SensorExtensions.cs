@@ -11,14 +11,28 @@ internal static class SensorExtensions
 {
   public static Metric AsMetric(this Sensor sensor)
   {
-    return MoBroItem
-      .CreateMetric()
-      .WithId(sensor.Id)
-      .WithLabel(sensor.Name)
-      .OfType(GetMetricType(sensor.SensorType))
-      .OfCategory(GetCategory(sensor.HardwareType))
-      .OfGroup(sensor.GroupId)
-      .Build();
+    switch (sensor.SensorType)
+    {
+      case "Text":
+        return MoBroItem
+          .CreateMetric()
+          .WithId(sensor.Id)
+          .WithLabel(sensor.Name)
+          .OfType(GetMetricType(sensor.SensorType))
+          .OfCategory(GetCategory(sensor.HardwareType))
+          .OfGroup(sensor.GroupId)
+          .AsStaticValue()
+          .Build();
+      default:
+        return MoBroItem
+          .CreateMetric()
+          .WithId(sensor.Id)
+          .WithLabel(sensor.Name)
+          .OfType(GetMetricType(sensor.SensorType))
+          .OfCategory(GetCategory(sensor.HardwareType))
+          .OfGroup(sensor.GroupId)
+          .Build();
+    }
   }
 
   public static Group AsGroup(this Sensor sensor)
@@ -38,13 +52,18 @@ internal static class SensorExtensions
   {
     if (sensor.Value == null) return null;
 
+    if (sensor.SensorType == "Text")
+    {
+      return sensor.Value;
+    }
+
     var doubleVal = Convert.ToDouble(sensor.Value);
     return sensor.SensorType switch
     {
       "Transfer" => doubleVal * 8, // bytes => bit
-      "Usage" => doubleVal * 1_000_000, // MB => Byte
-      "Total" => doubleVal * 1_000_000, // MB => Byte
-      _ => doubleVal
+      "Usage" => doubleVal,
+      "Total" => doubleVal,
+      _ => doubleVal / 1_000_000
     };
   }
 
@@ -71,6 +90,8 @@ internal static class SensorExtensions
         return CoreMetricType.Rotation;
       case "Multiplier":
         return CoreMetricType.Multiplier;
+      case "Text":
+        return CoreMetricType.Text;
       default:
         return CoreMetricType.Numeric;
     }

@@ -10,7 +10,7 @@
         <IsPackable>false</IsPackable>
         <Title>MoBro ArgusMonitor Plugin</Title>
         <Copyright>(C) Zeanon 2024</Copyright>
-        <PackageProjectUrl>https://mobro.app</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/Zeanon/mobro-plugin-argusmonitor/tree/main</PackageProjectUrl>
         <VersionPrefix>0.1.0</VersionPrefix>
         <Nullable>enable</Nullable>
         <OutputType>Exe</OutputType>
