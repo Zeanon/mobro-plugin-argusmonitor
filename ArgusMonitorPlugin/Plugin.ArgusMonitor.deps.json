@@ -7,7 +7,7 @@
   "targets": {
     ".NETCoreApp,Version=v8.0": {},
     ".NETCoreApp,Version=v8.0/win-x64": {
-      "Plugin.ArgusMonitor/0.0.1": {
+      "Plugin.ArgusMonitor/0.1.0": {
         "dependencies": {
           "MoBro.Plugin.SDK": "0.3.0"
         },
@@ -100,7 +100,7 @@
     }
   },
   "libraries": {
-    "Plugin.ArgusMonitor/0.0.1": {
+    "Plugin.ArgusMonitor/0.1.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

@@ -29,6 +29,8 @@ This includes data from various devices such as:
 - Synthetic Temperatures
 - And more...
 
+Small disclaimer: ArgusMonitor somehow doesnt export the CPU-Core temp to the API, easiest solution to get it is to just create a synthetic `max` temperature that only contains CPU-Core ![ArgusMonitor Screenshot](Resouces/Images/CPU-Core.png)
+
 ## Settings
 
 This plugin provides the following configurable settings:
