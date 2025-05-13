@@ -22,6 +22,7 @@ This includes data from various devices such as:
 - NVIDIA and AMD graphics cards
 - HDDs, SSDs, and NVMe drives
 - Network cards
+- Synthetic Temperatures
 - And more...
 
 ## Settings
