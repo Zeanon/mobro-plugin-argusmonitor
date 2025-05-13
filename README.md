@@ -8,6 +8,10 @@ by [ArgusMonitor](https://www.argusmonitor.com/index.php?language=en).
 This plugin is created and maintained by Zeanon and is not associated with ArgusMonitor.  
 It uses the a custom [ArgusMonitorLink.dll](https://github.com/Zeanon/ArgusMonitorLink) to directly access the metrics read out by ArgusMonitor.
 
+# Attention
+
+This plugin is in an alpha state rn, it seems to work well for me but it might still contain bugs, if you find any pls feel free to hit me up on the MoBro Discord (LastZeanon).
+
 ## Getting Started
 
 You need to have ArgusMonitor running and enable the Argus Data API in Settings->Stability.

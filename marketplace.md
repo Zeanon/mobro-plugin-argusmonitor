@@ -8,6 +8,12 @@ It uses the a custom [ArgusMonitorLink.dll](https://github.com/Zeanon/ArgusMonit
 
 ---
 
+# Attention
+
+This plugin is in an alpha state rn, it seems to work well for me but it might still contain bugs, if you find any pls feel free to hit me up on the MoBro Discord (LastZeanon).
+
+---
+
 # Setup
 
 You need to have ArgusMonitor running and enable the Argus Data API in Settings->Stability.
