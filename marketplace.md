@@ -4,7 +4,7 @@ by [ArgusMonitor](https://www.argusmonitor.com/index.php?language=en).
 # Disclaimer
 
 This plugin is created and maintained by Zeanon and is not associated with ArgusMonitor.  
-It uses the [Argus Data API](https://github.com/argotronic/argus_data_api/tree/master) to directly access the metrics read out by ArgusMonitor.
+It uses the a custom [ArgusMonitorLink.dll](https://github.com/Zeanon/ArgusMonitorLink) to directly access the metrics read out by ArgusMonitor.
 
 ---
 
