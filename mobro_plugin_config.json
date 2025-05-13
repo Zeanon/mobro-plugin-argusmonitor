@@ -1,6 +1,6 @@
 {
   "name": "zeanon_argusmonitor",
-  "displayName": "Argus Monitor Hardware Monitor",
+  "displayName": "Argus Monitor",
   "author": "Zeanon",
   "description": null,
   "assembly": "Plugin.ArgusMonitor.dll",
