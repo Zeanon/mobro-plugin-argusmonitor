@@ -39,14 +39,14 @@ public class ArgusMonitor : IDisposable
     ArgusMonitorWrapper.Start(argus_monitor);
   }
 
-  public int CheckForConnection()
-  {
-    return ArgusMonitorWrapper.CheckForConnection(argus_monitor);
-  }
-
-  public bool CheckConnection()
+  public int CheckConnection()
   {
     return ArgusMonitorWrapper.CheckConnection(argus_monitor);
+  }
+
+  public bool CheckData()
+  {
+    return ArgusMonitorWrapper.CheckData(argus_monitor);
   }
 
   public void Dispose()

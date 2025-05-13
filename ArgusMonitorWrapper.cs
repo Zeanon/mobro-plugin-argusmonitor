@@ -19,7 +19,7 @@ public static class ArgusMonitorWrapper
     public static extern int Start(IntPtr t);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int CheckForConnection(IntPtr t);
+    public static extern int CheckConnection(IntPtr t);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
     public static extern void Close(IntPtr t);
@@ -76,7 +76,7 @@ public static class ArgusMonitorWrapper
         return sensors;
     }
 
-    public static bool CheckConnection(IntPtr t) {
+    public static bool CheckData(IntPtr t) {
         ParseSensorData(t);
         return GetDataLength(t) > 0;
     }

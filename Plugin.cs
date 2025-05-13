@@ -29,7 +29,7 @@ public class Plugin : IMoBroPlugin, IDisposable
   {
     _argus.Start();
 
-    while(_argus.CheckForConnection() != 0) {
+    while(_argus.CheckConnection() != 0) {
       Thread.Sleep(5);
     }
 
@@ -39,7 +39,7 @@ public class Plugin : IMoBroPlugin, IDisposable
 
   private void InitArgus()
   {
-    while (!_argus.CheckConnection())
+    while (!_argus.CheckData())
     {
       Thread.Sleep(5);
     }
