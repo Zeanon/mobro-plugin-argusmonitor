@@ -1,27 +1,20 @@
-# mobro-plugin-librehardwaremonitor
+# mobro-plugin-argusmonitor
 
-![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/ModBros/mobro-plugin-librehardwaremonitor?label=version)
-![GitHub](https://img.shields.io/github/license/ModBros/mobro-plugin-librehardwaremonitor)
-[![MoBro](https://img.shields.io/badge/-MoBro-red.svg)](https://mobro.app)
-[![Discord](https://img.shields.io/discord/620204412706750466.svg?color=7389D8&labelColor=6A7EC2&logo=discord&logoColor=ffffff&style=flat-square)](https://discord.com/invite/DSNX4ds)
-
-**LibreHardwareMonitor plugin for MoBro**
+**ArgusMonitor plugin for MoBro**
 
 Integrates PC hardware metrics into [MoBro](https://mobro.app) made available
-by [LibreHardwareMonitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor).
+by [ArgusMonitor](https://www.argusmonitor.com/index.php?language=en).
 
-This plugin is created and maintained by ModBros and is not associated with LibreHardwareMonitor.  
-It leverages the [LibreHardwareMonitorLib](https://www.nuget.org/packages/LibreHardwareMonitorLib/) library, provided by
-LibreHardwareMonitor, to fetch PC hardware metrics.
+This plugin is created and maintained by Zeanon and is not associated with ArgusMonitor.  
+It uses the [Argus Data API](https://github.com/argotronic/argus_data_api/tree/master) to directly access the metrics read out by ArgusMonitor.
 
 ## Getting Started
 
-No additional setup is required.  
-The plugin comes with LibreHardwareMonitor already integrated, so no separate installation is necessary.
+You need to have ArgusMonitor running and enable the Argus Data API in Settings->Stability.
 
 ## Metrics
 
-All metrics offered by LibreHardwareMonitor are fully integrated and accessible within MoBro.  
+All metrics offered by ArgusMonitor are fully integrated and accessible within MoBro.  
 This includes data from various devices such as:
 
 - Motherboards
@@ -42,11 +35,10 @@ This plugin provides the following configurable settings:
 | Graphics Card    | enabled | Enables monitoring and inclusion of graphics card (GPU) metrics.                                                                                         |
 | Memory           | enabled | Enables monitoring and inclusion of memory (RAM) metrics.                                                                                                |
 | Motherboard      | enabled | Enables monitoring and inclusion of motherboard metrics.                                                                                                 |
-| Drives           | enabled | Enables monitoring and inclusion of drive (HDDs, SSDs, etc.) metrics.                                                                                    |
-| Controller       | enabled | Enables monitoring and inclusion of controller metrics.                                                                                                  |
+| Drives           | enabled | Enables monitoring and inclusion of drive (HDDs, SSDs, etc.) metrics.                                                                                    |                  |
 | Network          | enabled | Enables monitoring and inclusion of network (NIC) metrics.                                                                                               |
-| Power supply     | enabled | Enables monitoring and inclusion of power supply (PSU) metrics.                                                                                          |
 | Battery          | enabled | Enables monitoring and inclusion of battery metrics.                                                                                                     |
+| Synthetic          | enabled | Enables monitoring and inclusion of Argus Monitor Synthetic temperatures                                                                                                      |
 
 ## SDK
 

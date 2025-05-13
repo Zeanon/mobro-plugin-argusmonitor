@@ -42,6 +42,8 @@ internal static class SensorExtensions
     return sensor.SensorType switch
     {
       "Transfer" => doubleVal * 8, // bytes => bit
+      "Usage" => doubleVal * 1_000_000, // MB => Byte
+      "Total" => doubleVal * 1_000_000, // MB => Byte
       _ => doubleVal
     };
   }
@@ -56,15 +58,13 @@ internal static class SensorExtensions
       case "Temperature":
         return CoreMetricType.Temperature;
       case "Load":
-      case "Usage":
-      case "Usage Percent":
-      case "Percent":
       case "Percentage":
         return CoreMetricType.Usage;
+      case "Total":
+      case "Usage":
+        return CoreMetricType.Data;
       case "Power":
         return CoreMetricType.Power;
-      case "Name":
-        return CoreMetricType.Data;
       case "Transfer":
         return CoreMetricType.DataFlow;
       case "RPM":

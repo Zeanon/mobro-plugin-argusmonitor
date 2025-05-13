@@ -61,12 +61,12 @@ public static class ArgusMonitorWrapper
             }
 
             Sensor sensor = new Sensor(
-                "ArgusMonitor" + SanitizeId(sensor_values[0]),
+                SanitizeId("ArgusMonitor" + sensor_values[0] + sensor_values[2] + sensor_values[3]),
                 sensor_values[0],
-                float.Parse(sensor_values[1]),
+                float.Parse(sensor_values[1]) / 1000000,
                 sensor_values[2],
                 sensor_values[3],
-                "ArgusMonitor" + SanitizeId(sensor_values[4]),
+                SanitizeId("ArgusMonitor" + sensor_values[4]),
                 sensor_values[4]
             );
 

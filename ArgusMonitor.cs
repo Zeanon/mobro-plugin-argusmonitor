@@ -14,14 +14,6 @@ public class ArgusMonitor : IDisposable
 {
   private readonly IntPtr argus_monitor = ArgusMonitorWrapper.Instantiate();
 
-  private bool cpu_enabled = true;
-  private bool gpu_enabled = true;
-  private bool memory_enabled = true;
-  private bool mainboard_enabled = true;
-  private bool network_enabled = true;
-  private bool battery_enabled = true;
-  private bool drive_enabled = true;
-
   public void Update(IMoBroSettings settings)
   {
     ArgusMonitorWrapper.SetSensorEnabled(argus_monitor, new StringBuilder("CPU"), settings.GetValue<bool>("cpu_enabled") ? 1 : 0);
