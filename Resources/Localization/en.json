@@ -1,0 +1,22 @@
+{
+  "settings.update.desc": "Frequency in milliseconds to read the sensors and update the metrics",
+  "settings.update.title": "Update frequency",
+  "settings.cpu.desc": "Whether the processor (CPU) should be monitored",
+  "settings.cpu.title": "Processor",
+  "settings.drives.desc": "Whether drives (HDDs, SSDs,..) should be monitored",
+  "settings.drives.title": "Drives",
+  "settings.gpu.desc": "Whether the graphics card (GPU) should be monitored",
+  "settings.gpu.title": "Graphics card",
+  "settings.motherboard.desc": "Whether the motherboard sensors should be monitored",
+  "settings.motherboard.title": "Motherboard",
+  "settings.network.desc": "Whether network activity should be monitored",
+  "settings.network.title": "Network",
+  "settings.ram.desc": "Whether the system memory (RAM) should be monitored",
+  "settings.ram.title": "Memory",
+  "settings.battery.desc": "Whether the battery should be monitored",
+  "settings.battery.title": "Battery",
+  "settings.argus.desc": "Whether synthetic argus monitor values should be monitored",
+  "settings.argus.title": "Synthetic",
+  "settings.delay.desc": "Optional delay before initializing and querying sensors (in seconds)",
+  "settings.delay.title": "Initialization delay"
+}
