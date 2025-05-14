@@ -89,7 +89,7 @@ public class ArgusMonitor : IDisposable
                 continue;
             }
 
-            var sensor_values = sensor_string.Split("|");
+            var sensor_values = sensor_string.Split(new string[] { "[<|>]" }, StringSplitOptions.None);
 
             if (sensor_values.Length < 5 || sensor_values[2] == "Invalid")
             {
@@ -139,7 +139,7 @@ public class ArgusMonitor : IDisposable
                 continue;
             }
 
-            var sensor_values = sensor_string.Split("|");
+            var sensor_values = sensor_string.Split(new string[] { "[<|>]" }, StringSplitOptions.None);
 
             if (sensor_values.Length < 5 || sensor_values[2] == "Invalid")
             {
@@ -158,7 +158,7 @@ public class ArgusMonitor : IDisposable
         ArgusMonitorWrapper.GetSensorData(argus_monitor, sb, n);
         var sensor_data = sb.ToString();
 
-        return sensor_data.Split("^");
+        return sensor_data.Split(new string[] { "]<|>[" }, StringSplitOptions.None);
     }
 
     private static string SanitizeId(string id)
