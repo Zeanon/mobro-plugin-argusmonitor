@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using MoBro.Plugin.SDK;
-using MoBro.Plugin.SDK.Builders;
 using MoBro.Plugin.SDK.Services;
 
 namespace Zeanon.Plugin.ArgusMonitor;
@@ -14,7 +12,6 @@ public class Plugin : IMoBroPlugin, IDisposable
     private const int DefaultInitDelay = 0;
 
     private readonly IMoBroSettings _settings;
-    private readonly IMoBroService _service;
     private readonly IMoBroScheduler _scheduler;
 
     private readonly ArgusMonitor _argus;
@@ -22,9 +19,8 @@ public class Plugin : IMoBroPlugin, IDisposable
     public Plugin(IMoBroSettings settings, IMoBroService service, IMoBroScheduler scheduler)
     {
         _settings = settings;
-        _service = service;
         _scheduler = scheduler;
-        _argus = new ArgusMonitor();
+        _argus = new ArgusMonitor(service);
     }
 
     public void Init()
@@ -47,13 +43,13 @@ public class Plugin : IMoBroPlugin, IDisposable
             Thread.Sleep(50);
         }
 
-        _argus.Update(_settings);
+        _argus.UpdateSettings(_settings);
 
         // register custom hardware category
-        _argus.RegisterCategories(_service);
+        _argus.RegisterCategories();
 
         // register groups and metrics
-        _argus.RegisterItems(_service);
+        _argus.RegisterItems();
 
         // start polling metric values
         var updateFrequency = _settings.GetValue("update_frequency", DefaultUpdateFrequencyMs);
@@ -62,7 +58,7 @@ public class Plugin : IMoBroPlugin, IDisposable
 
     private void UpdateMetricValues()
     {
-        _argus.UpdateMetricValues(_service);
+        _argus.UpdateMetricValues();
     }
 
     public void Dispose()

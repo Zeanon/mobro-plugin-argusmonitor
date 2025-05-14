@@ -1,16 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using MoBro.Plugin.SDK.Models;
-using MoBro.Plugin.SDK.Models.Metrics;
 using MoBro.Plugin.SDK.Services;
 using MoBro.Plugin.SDK.Models.Categories;
 using MoBro.Plugin.SDK.Builders;
-using MoBro.Plugin.SDK.Builders;
 using MoBro.Plugin.SDK.Enums;
-using Zeanon.Plugin.ArgusMonitor;
 
 namespace Zeanon.Plugin.ArgusMonitor;
 
@@ -19,25 +14,40 @@ public class ArgusMonitor : IDisposable
 {
     private readonly IntPtr argus_monitor = ArgusMonitorWrapper.Instantiate();
 
+    private readonly IMoBroService _service;
+
     private static readonly Regex IdSanitationRegex = new(@"[^\w\.\-]", RegexOptions.Compiled);
 
 
-    public static Category argusMonitorSynthetic = MoBroItem
+    public static readonly Dictionary<string, string> Settings = new Dictionary<string, string>
+    {
+        ["CPU"] = "true",
+        ["GPU"] = "true",
+        ["RAM"] = "true",
+        ["Mainboard"] = "true",
+        ["Drive"] = "true",
+        ["Network"] = "true",
+        ["Battery"] = "true",
+        ["ArgusMonitor"] = "true",
+    };
+
+    public static readonly Category argusMonitorSynthetic = MoBroItem
       .CreateCategory()
       .WithId("argusmonitor_synthetic")
       .WithLabel("Argus Monitor")
       .Build();
 
-    public void Update(IMoBroSettings settings)
+    public ArgusMonitor(IMoBroService service)
     {
-        ArgusMonitorWrapper.SetSensorEnabled(argus_monitor, new StringBuilder("CPU"), settings.GetValue<bool>("cpu_enabled") ? 1 : 0);
-        ArgusMonitorWrapper.SetSensorEnabled(argus_monitor, new StringBuilder("GPU"), settings.GetValue<bool>("gpu_enabled") ? 1 : 0);
-        ArgusMonitorWrapper.SetSensorEnabled(argus_monitor, new StringBuilder("RAM"), settings.GetValue<bool>("ram_enabled") ? 1 : 0);
-        ArgusMonitorWrapper.SetSensorEnabled(argus_monitor, new StringBuilder("Mainboard"), settings.GetValue<bool>("motherboard_enabled") ? 1 : 0);
-        ArgusMonitorWrapper.SetSensorEnabled(argus_monitor, new StringBuilder("Drive"), settings.GetValue<bool>("hdd_enabled") ? 1 : 0);
-        ArgusMonitorWrapper.SetSensorEnabled(argus_monitor, new StringBuilder("Network"), settings.GetValue<bool>("network_enabled") ? 1 : 0);
-        ArgusMonitorWrapper.SetSensorEnabled(argus_monitor, new StringBuilder("Battery"), settings.GetValue<bool>("battery_enabled") ? 1 : 0);
-        ArgusMonitorWrapper.SetSensorEnabled(argus_monitor, new StringBuilder("ArgusMonitor"), settings.GetValue<bool>("argus_enabled") ? 1 : 0);
+        _service = service;
+    }
+
+    public void UpdateSettings(IMoBroSettings settings)
+    {
+        foreach (KeyValuePair<string, string> setting in Settings)
+        {
+            ArgusMonitorWrapper.SetSensorEnabled(argus_monitor, new StringBuilder(setting.Key), settings.GetValue<bool>(setting.Key, bool.Parse(setting.Value)) ? 1 : 0);
+        }
     }
 
     public void Start()
@@ -60,37 +70,38 @@ public class ArgusMonitor : IDisposable
         ArgusMonitorWrapper.Close(argus_monitor);
     }
 
-    public void RegisterCategories(IMoBroService service)
+    public void RegisterCategories()
     {
-        service.Register(ArgusMonitor.argusMonitorSynthetic);
+        _service.Register(ArgusMonitor.argusMonitorSynthetic);
     }
 
-    public void RegisterItems(IMoBroService service)
+    public void RegisterItems()
     {
-        string[] sensor_data = SensorData();
+        var sensor_data = SensorData();
 
-        List<string> groups = new List<string>();
+        var groups = new List<string>();
+
         for (int i = 0; i < sensor_data.Length; ++i)
         {
-            string sensor_string = sensor_data[i];
+            var sensor_string = sensor_data[i];
             if (sensor_string.Length == 0)
             {
                 continue;
             }
 
-            string[] sensor_values = sensor_string.Split("|");
+            var sensor_values = sensor_string.Split("|");
 
             if (sensor_values.Length < 5 || sensor_values[2] == "Invalid")
             {
                 continue;
             }
 
-            string group_id = SanitizeId(sensor_values[3] + "_" + sensor_values[4]);
+            var group_id = SanitizeId(sensor_values[3] + "_" + sensor_values[4]);
 
             if (!groups.Contains(group_id))
             {
                 groups.Add(group_id);
-                service.Register(MoBroItem.CreateGroup().WithId(group_id).WithLabel(sensor_values[4]).Build());
+                _service.Register(MoBroItem.CreateGroup().WithId(group_id).WithLabel(sensor_values[4]).Build());
             }
 
             var type_stage = MoBroItem
@@ -107,51 +118,55 @@ public class ArgusMonitor : IDisposable
 
             if (sensor_values[2] == "Text")
             {
-                service.Register(group_stage.AsStaticValue().Build());
+                _service.Register(group_stage.AsStaticValue().Build());
             }
             else
             {
-                service.Register(group_stage.Build());
+                _service.Register(group_stage.Build());
             }
         }
     }
 
-    public void UpdateMetricValues(IMoBroService service)
+    public void UpdateMetricValues()
     {
-        string[] sensor_data = SensorData();
+        var sensor_data = SensorData();
 
         for (int i = 0; i < sensor_data.Length; ++i)
         {
-            string sensor_string = sensor_data[i];
+            var sensor_string = sensor_data[i];
             if (sensor_string.Length == 0)
             {
                 continue;
             }
 
-            string[] sensor_values = sensor_string.Split("|");
+            var sensor_values = sensor_string.Split("|");
 
             if (sensor_values.Length < 5 || sensor_values[2] == "Invalid")
             {
                 continue;
             }
 
-            service.UpdateMetricValue(SanitizeId(sensor_values[3] + "_" + sensor_values[2] + "_" + sensor_values[0]), _GetMetricValue(sensor_values[1], sensor_values[2]));
+            _service.UpdateMetricValue(SanitizeId(sensor_values[3] + "_" + sensor_values[2] + "_" + sensor_values[0]), GetMetricValue(sensor_values[1], sensor_values[2]));
         }
     }
 
     private string[] SensorData()
     {
         ArgusMonitorWrapper.ParseSensorData(argus_monitor);
-        int n = ArgusMonitorWrapper.GetDataLength(argus_monitor);
+        var n = ArgusMonitorWrapper.GetDataLength(argus_monitor);
         StringBuilder sb = new StringBuilder(n);
         ArgusMonitorWrapper.GetSensorData(argus_monitor, sb, n);
-        string sensor_data = sb.ToString();
-
+        var sensor_data = sb.ToString();
 
         return sensor_data.Split("^");
     }
 
-    private static object? _GetMetricValue(string value, string sensorType)
+    private static string SanitizeId(string id)
+    {
+        return IdSanitationRegex.Replace(id, "");
+    }
+
+    private static object? GetMetricValue(string value, string sensorType)
     {
         if (value == null) return null;
 
@@ -222,10 +237,4 @@ public class ArgusMonitor : IDisposable
                 return CoreCategory.Miscellaneous;
         }
     }
-
-    private static string SanitizeId(string id)
-    {
-        return IdSanitationRegex.Replace(id, "");
-    }
 }
-

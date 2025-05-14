@@ -50,7 +50,7 @@
     },
     {
       "type": "checkbox",
-      "name": "cpu_enabled",
+      "name": "CPU",
       "label": "settings.cpu.title",
       "description": "settings.cpu.desc",
       "defaultValue": true,
@@ -58,7 +58,7 @@
     },
     {
       "type": "checkbox",
-      "name": "gpu_enabled",
+      "name": "GPU",
       "label": "settings.gpu.title",
       "description": "settings.gpu.desc",
       "defaultValue": true,
@@ -66,7 +66,7 @@
     },
     {
       "type": "checkbox",
-      "name": "ram_enabled",
+      "name": "RAM",
       "label": "settings.ram.title",
       "description": "settings.ram.desc",
       "defaultValue": true,
@@ -74,7 +74,7 @@
     },
     {
       "type": "checkbox",
-      "name": "motherboard_enabled",
+      "name": "Mainboard",
       "label": "settings.motherboard.title",
       "description": "settings.motherboard.desc",
       "defaultValue": true,
@@ -82,7 +82,7 @@
     },
     {
       "type": "checkbox",
-      "name": "hdd_enabled",
+      "name": "Drive",
       "label": "settings.drives.title",
       "description": "settings.drives.desc",
       "defaultValue": true,
@@ -90,7 +90,7 @@
     },
     {
       "type": "checkbox",
-      "name": "network_enabled",
+      "name": "Network",
       "label": "settings.network.title",
       "description": "settings.network.desc",
       "defaultValue": true,
@@ -98,7 +98,7 @@
     },
     {
       "type": "checkbox",
-      "name": "battery_enabled",
+      "name": "Battery",
       "label": "settings.battery.title",
       "description": "settings.battery.desc",
       "defaultValue": true,
@@ -106,7 +106,7 @@
     },
         {
       "type": "checkbox",
-      "name": "argus_enabled",
+      "name": "ArgusMonitor",
       "label": "settings.argus.title",
       "description": "settings.argus.desc",
       "defaultValue": true,
