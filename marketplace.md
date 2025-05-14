@@ -53,4 +53,4 @@ This plugin provides the following configurable settings:
 | Drives           | enabled | Enables monitoring and inclusion of drive (HDDs, SSDs, etc.) metrics.                                                                                    |                  |
 | Network          | enabled | Enables monitoring and inclusion of network (NIC) metrics.                                                                                               |
 | Battery          | enabled | Enables monitoring and inclusion of battery metrics.                                                                                                     |
-| Synthetic          | enabled | Enables monitoring and inclusion of Argus Monitor Synthetic temperatures                                                                                                      |
+| Synthetic          | enabled | Enables monitoring and inclusion of Argus Monitor Synthetic temperatures.                                                                                                      |
