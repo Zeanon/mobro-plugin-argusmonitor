@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using MoBro.Plugin.SDK;
+using MoBro.Plugin.SDK.Builders;
 using MoBro.Plugin.SDK.Services;
 
 namespace Zeanon.Plugin.ArgusMonitor;
@@ -46,8 +48,10 @@ public class Plugin : IMoBroPlugin, IDisposable
 
     _argus.Update(_settings);
 
+    _service.Register(ArgusMonitor.argusMonitorSynthetic);
+
     // register groups and metrics
-    _service.Register(_argus.GetMetricItems());
+    _argus.RegisterItems(_service);
 
     // start polling metric values
     var updateFrequency = _settings.GetValue("update_frequency", DefaultUpdateFrequencyMs);
@@ -56,7 +60,7 @@ public class Plugin : IMoBroPlugin, IDisposable
 
   private void UpdateMetricValues()
   {
-    _service.UpdateMetricValues(_argus.GetMetricValues());
+    _argus.UpdateMetricValues(_service);
   }
 
   public void Dispose()

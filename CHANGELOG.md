@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Synthetic Temperatures now have their own hardware type
+- Modified Group and Sensor IDs to ensure they are truly unique
+
+## 0.1.2 - 2025-05-14
+
+### Changed
+
 - Updated DisplayName
 
 ## 0.1.1 - 2025-05-13
