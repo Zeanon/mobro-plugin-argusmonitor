@@ -9,14 +9,14 @@ using var plugin = MoBroPluginBuilder
   .WithLogLevel(LogEventLevel.Debug)
   .WithSettings(new Dictionary<string, string>
   {
-    ["cpu_enabled"] = "true",
-    ["gpu_enabled"] = "true",
-    ["ram_enabled"] = "true",
-    ["motherboard_enabled"] = "true",
-    ["hdd_enabled"] = "true",
-    ["network_enabled"] = "true",
-    ["battery_enabled"] = "true",
-    ["argus_enabled"] = "true",
+      ["cpu_enabled"] = "true",
+      ["gpu_enabled"] = "true",
+      ["ram_enabled"] = "true",
+      ["motherboard_enabled"] = "true",
+      ["hdd_enabled"] = "true",
+      ["network_enabled"] = "true",
+      ["battery_enabled"] = "true",
+      ["argus_enabled"] = "true",
   })
   .Build();
 
