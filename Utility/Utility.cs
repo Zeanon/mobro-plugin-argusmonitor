@@ -1,10 +1,11 @@
-﻿using System;
+﻿using MoBro.Plugin.SDK.Enums;
+using System;
 using System.Text.RegularExpressions;
-using MoBro.Plugin.SDK.Enums;
+using Zeanon.Plugin.ArgusMonitor.Enums;
 
 namespace Zeanon.Plugin.ArgusMonitor.Utility;
 
-public static class SensorUtilities
+public static class ArgusMonitorUtilities
 {
     private static readonly Regex IdSanitationRegex = new(@"[^\w\.\-]", RegexOptions.Compiled);
 
@@ -17,7 +18,7 @@ public static class SensorUtilities
             return value;
         }
 
-        var doubleVal = Convert.ToDouble(value);
+        double doubleVal = Convert.ToDouble(value);
         return sensorType switch
         {
             "Transfer" => doubleVal * 8 / 1_000_000, // bytes => bit
@@ -84,5 +85,29 @@ public static class SensorUtilities
     public static string SanitizeId(string id)
     {
         return IdSanitationRegex.Replace(id, "");
+    }
+
+    public static string SanitizeId(CommonID id)
+    {
+        return IdSanitationRegex.Replace(id.ToString(), "");
+    }
+
+    public static string SanitizeId(CommonGroup id)
+    {
+        return IdSanitationRegex.Replace(id.ToString(), "");
+    }
+    public static string SensorID(string[] sensor_values)
+    {
+        return SanitizeId(sensor_values[3] + "_" + sensor_values[2] + "_" + sensor_values[4] + "_" + sensor_values[0]);
+    }
+
+    public static string CoreClockID(string[] sensor_values)
+    {
+        return SanitizeId(sensor_values[3] + "_Frequency_Clock_" + sensor_values[0]);
+    }
+
+    public static string GroupID(string[] sensor_values)
+    {
+        return SanitizeId(sensor_values[3] + "_" + sensor_values[4]);
     }
 }

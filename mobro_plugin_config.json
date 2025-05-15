@@ -2,7 +2,7 @@
   "name": "zeanon_argusmonitor",
   "displayName": "Argus Monitor",
   "author": "Zeanon",
-  "description": null,
+  "description": "MoBro ArgusMonitor plugin",
   "assembly": "Plugin.ArgusMonitor.dll",
   "localization": "Resources/Localization",
   "settings": [

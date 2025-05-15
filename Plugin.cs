@@ -1,7 +1,7 @@
-﻿using System;
-using System.Threading;
+﻿using Microsoft.Extensions.Logging;
 using MoBro.Plugin.SDK;
 using MoBro.Plugin.SDK.Services;
+using System;
 
 namespace Zeanon.Plugin.ArgusMonitor;
 
@@ -16,33 +16,28 @@ public class Plugin : IMoBroPlugin, IDisposable
 
     private readonly ArgusMonitor _argus;
 
-    public Plugin(IMoBroSettings settings, IMoBroService service, IMoBroScheduler scheduler)
+    public Plugin(IMoBroSettings settings, IMoBroService service, IMoBroScheduler scheduler, ILogger logger)
     {
         _settings = settings;
         _scheduler = scheduler;
-        _argus = new ArgusMonitor(service);
+        _argus = new ArgusMonitor(service, logger);
     }
 
     public void Init()
     {
         _argus.Start();
 
-        while (!_argus.CheckConnection())
-        {
-            Thread.Sleep(50);
-        }
+        _argus.WaitForConnection();
 
-        var initDelay = _settings.GetValue("init_delay", DefaultInitDelay);
+        int initDelay = _settings.GetValue("init_delay", DefaultInitDelay);
         _scheduler.OneOff(InitArgus, TimeSpan.FromSeconds(initDelay));
     }
 
     private void InitArgus()
     {
-        while (!_argus.CheckData())
-        {
-            Thread.Sleep(50);
-        }
+        _argus.WaitForData();
 
+        // set the settings
         _argus.UpdateSettings(_settings);
 
         // register custom hardware category
@@ -52,7 +47,7 @@ public class Plugin : IMoBroPlugin, IDisposable
         _argus.RegisterItems();
 
         // start polling metric values
-        var updateFrequency = _settings.GetValue("update_frequency", DefaultUpdateFrequencyMs);
+        int updateFrequency = _settings.GetValue("update_frequency", DefaultUpdateFrequencyMs);
         _scheduler.Interval(UpdateMetricValues, TimeSpan.FromMilliseconds(updateFrequency), InitialDelay);
     }
 

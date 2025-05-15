@@ -20,6 +20,7 @@
         <RuntimeIdentifier>win-x64</RuntimeIdentifier>
         <LangVersion>11</LangVersion>
         <InvariantGlobalization>true</InvariantGlobalization>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
 

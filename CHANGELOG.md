@@ -10,13 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Code Cleanup
+- Huge Code Cleanup
+- Fixed non-unique sensor IDs
+- Added artificial metrics
+- Improved error handling
 
 ## 0.1.4 - 2025-05-14
 
 ### Changed
 
 - Improved data transfer from ArgusMonitorLink to the plugin
+- Fixed network transfer rate readout
 
 ## 0.1.3 - 2025-05-14
 

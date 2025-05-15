@@ -1,9 +1,9 @@
-using System;
 using MoBro.Plugin.SDK;
 using Serilog.Events;
+using System;
 using Zeanon.Plugin.ArgusMonitor;
 
-using var plugin = MoBroPluginBuilder
+using MoBroPluginWrapper plugin = MoBroPluginBuilder
   .Create<Plugin>()
   .WithLogLevel(LogEventLevel.Debug)
   .WithSettings(ArgusMonitor.Settings)
