@@ -10,7 +10,7 @@ It uses the a custom [ArgusMonitorLink.dll](https://github.com/Zeanon/ArgusMonit
 
 # Attention
 
-**Breaking Change from 1.1.2 to 1.1.3: I had to modify the sensor IDs slightly to ensure them being truly unique and synthetic Temperatures now have their own dedicated hardware group so you need to re-select them in your layouts.**
+**Breaking Change from 0.1.2 to 0.1.3 and to 0.1.5: I had to modify the sensor IDs slightly to ensure them being truly unique (Argus Monitor did some funky stuff I wasnt aware of but that got pointed out to me, sorry for the inconvenience, this is hopefully the last breaking change in that manner) and synthetic Temperatures now have their own dedicated hardware group so you need to re-select them in your layouts.**
 
 This plugin is in an alpha state rn, it seems to work well for me but it might still contain bugs, if you find any pls feel free to hit me up on the MoBro Discord (LastZeanon).
 

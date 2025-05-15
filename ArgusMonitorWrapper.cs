@@ -11,16 +11,13 @@ public static class ArgusMonitorWrapper
     public static extern IntPtr Instantiate();
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int Start(IntPtr t);
+    public static extern void Start(IntPtr t);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int CheckConnection(IntPtr t);
+    public static extern bool CheckConnection(IntPtr t);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
     public static extern void Close(IntPtr t);
-
-    [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern void SetSensorEnabled(IntPtr t, StringBuilder sb, int enabled);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
     public static extern void ParseSensorData(IntPtr t);
@@ -30,11 +27,11 @@ public static class ArgusMonitorWrapper
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
     public static extern void GetSensorData(IntPtr t, StringBuilder sb, int maxlen);
-    #endregion
 
-    public static bool CheckData(IntPtr t)
-    {
-        ParseSensorData(t);
-        return GetDataLength(t) > 0;
-    }
+    [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
+    public static extern bool CheckData(IntPtr t);
+
+    [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
+    public static extern void SetSensorEnabled(IntPtr t, StringBuilder sb, bool enabled);
+    #endregion
 }

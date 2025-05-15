@@ -1,7 +1,7 @@
 using System;
-using Zeanon.Plugin.ArgusMonitor;
 using MoBro.Plugin.SDK;
 using Serilog.Events;
+using Zeanon.Plugin.ArgusMonitor;
 
 using var plugin = MoBroPluginBuilder
   .Create<Plugin>()
