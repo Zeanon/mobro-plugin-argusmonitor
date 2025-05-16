@@ -126,7 +126,7 @@ public class ArgusMonitor : IDisposable
         // register some artificial metrics
         _service.Register(MoBroItem
             .CreateMetric()
-            .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Temperature_CPU_MAX))
+            .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Temperature_CPU_Max))
             .WithLabel("CPU Temperature Max")
             .OfType(CoreMetricType.Temperature)
             .OfCategory(CoreCategory.Cpu)
@@ -135,7 +135,7 @@ public class ArgusMonitor : IDisposable
 
         _service.Register(MoBroItem
             .CreateMetric()
-            .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Multiplier_CPU_MAX))
+            .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Multiplier_CPU_Max))
             .WithLabel("CPU Multiplier Max")
             .OfType(CoreMetricType.Multiplier)
             .OfCategory(CoreCategory.Cpu)
@@ -144,8 +144,62 @@ public class ArgusMonitor : IDisposable
 
         _service.Register(MoBroItem
             .CreateMetric()
-            .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Core_Clock_CPU_MAX))
+            .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Core_Clock_CPU_Max))
             .WithLabel("CPU Clock Max")
+            .OfType(CoreMetricType.Frequency)
+            .OfCategory(CoreCategory.Cpu)
+            .OfGroup(ArgusMonitorUtilities.SanitizeId(CommonGroup.CPU_Core_Clock))
+            .Build());
+
+                _service.Register(MoBroItem
+            .CreateMetric()
+            .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Temperature_CPU_Average))
+            .WithLabel("CPU Temperature Average")
+            .OfType(CoreMetricType.Temperature)
+            .OfCategory(CoreCategory.Cpu)
+            .OfGroup(ArgusMonitorUtilities.SanitizeId(CommonGroup.CPU_Temperature))
+            .Build());
+
+        _service.Register(MoBroItem
+            .CreateMetric()
+            .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Multiplier_CPU_Average))
+            .WithLabel("CPU Multiplier Average")
+            .OfType(CoreMetricType.Multiplier)
+            .OfCategory(CoreCategory.Cpu)
+            .OfGroup(ArgusMonitorUtilities.SanitizeId(CommonGroup.CPU_Multiplier))
+            .Build());
+
+        _service.Register(MoBroItem
+            .CreateMetric()
+            .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Core_Clock_CPU_Average))
+            .WithLabel("CPU Clock Average")
+            .OfType(CoreMetricType.Frequency)
+            .OfCategory(CoreCategory.Cpu)
+            .OfGroup(ArgusMonitorUtilities.SanitizeId(CommonGroup.CPU_Core_Clock))
+            .Build());
+
+                _service.Register(MoBroItem
+            .CreateMetric()
+            .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Temperature_CPU_Min))
+            .WithLabel("CPU Temperature Min")
+            .OfType(CoreMetricType.Temperature)
+            .OfCategory(CoreCategory.Cpu)
+            .OfGroup(ArgusMonitorUtilities.SanitizeId(CommonGroup.CPU_Temperature))
+            .Build());
+
+        _service.Register(MoBroItem
+            .CreateMetric()
+            .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Multiplier_CPU_Min))
+            .WithLabel("CPU Multiplier Min")
+            .OfType(CoreMetricType.Multiplier)
+            .OfCategory(CoreCategory.Cpu)
+            .OfGroup(ArgusMonitorUtilities.SanitizeId(CommonGroup.CPU_Multiplier))
+            .Build());
+
+        _service.Register(MoBroItem
+            .CreateMetric()
+            .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Core_Clock_CPU_Min))
+            .WithLabel("CPU Clock Min")
             .OfType(CoreMetricType.Frequency)
             .OfCategory(CoreCategory.Cpu)
             .OfGroup(ArgusMonitorUtilities.SanitizeId(CommonGroup.CPU_Core_Clock))
@@ -276,14 +330,20 @@ public class ArgusMonitor : IDisposable
                 _service.UpdateMetricValue(multiplier.Key, multiplier.Value * fsb);
             }
 
-            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Multiplier_CPU_MAX), multipliers.Values.Max());
-            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Core_Clock_CPU_MAX), multipliers.Values.Max() * fsb);
+            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Multiplier_CPU_Max), multipliers.Values.Max());
+            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Core_Clock_CPU_Max), multipliers.Values.Max() * fsb);
+            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Multiplier_CPU_Average), multipliers.Values.Average());
+            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Core_Clock_CPU_Average), multipliers.Values.Average() * fsb);
+            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Multiplier_CPU_Min), multipliers.Values.Min());
+            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Core_Clock_CPU_Min), multipliers.Values.Min() * fsb);
         }
 
         // if we have cpu temp values, update the max
         if (cpu_temps.Count > 0)
         {
-            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Temperature_CPU_MAX), cpu_temps.Max());
+            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Temperature_CPU_Max), cpu_temps.Max());
+            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Temperature_CPU_Average), cpu_temps.Average());
+            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Temperature_CPU_Min), cpu_temps.Min());
         }
     }
 
