@@ -26,12 +26,15 @@ public static class ArgusMonitorWrapper
     public static extern int GetDataLength(this IntPtr t);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern void GetSensorData(this IntPtr t, StringBuilder sb, int maxlen);
+    public static extern void GetSensorData(this IntPtr t, StringBuilder buffer, int maxlen);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
     public static extern bool CheckData(this IntPtr t);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern void SetSensorEnabled(this IntPtr t, StringBuilder sb, bool enabled);
+    public static extern void SetSensorEnabled(this IntPtr t, StringBuilder name, bool enabled);
+
+    [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
+    public static extern bool GetSensorEnabled(this IntPtr t, StringBuilder name);
     #endregion
 }
