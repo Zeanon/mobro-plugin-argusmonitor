@@ -2,7 +2,7 @@
 
 public enum CommonGroup
 {
-    CPU_Temperature,
-    CPU_Multiplier,
-    CPU_Core_Clock,
+    Temperature,
+    Multiplier,
+    Core_Clock,
 }

@@ -5,9 +5,9 @@ using System;
 
 namespace Zeanon.Plugin.ArgusMonitor;
 
-public class Plugin : IMoBroPlugin, IDisposable
+public class Plugin : IMoBroPlugin
 {
-    private static readonly TimeSpan InitialDelay = TimeSpan.FromSeconds(2);
+    private const int DefaultInitialDelay = 1;
     private const int DefaultUpdateFrequencyMs = 1000;
     private const int DefaultInitDelay = 0;
 
@@ -25,20 +25,24 @@ public class Plugin : IMoBroPlugin, IDisposable
 
     public void Init()
     {
-        _argus.Start();
-
-        _argus.WaitForConnection();
-
-        int initDelay = _settings.GetValue("init_delay", DefaultInitDelay);
-        _scheduler.OneOff(InitArgus, TimeSpan.FromSeconds(initDelay));
+        _scheduler.OneOff(InitArgus, TimeSpan.FromSeconds(_settings.GetValue("init_delay", DefaultInitDelay)));
     }
 
     private void InitArgus()
     {
-        _argus.WaitForData();
+        int updateFrequency = _settings.GetValue("update_frequency", DefaultUpdateFrequencyMs);
+        _argus.Init(updateFrequency);
 
-        // set the settings
         _argus.UpdateSettings(_settings);
+
+        // wait for the argus api to connect to Argus Monitor
+        _argus.WaitForOpen(updateFrequency);
+
+        // wait for a proper connection and data
+        _argus.WaitForArgus(updateFrequency);
+
+        // init the total sensor count so we know it for the list initialization
+        _argus.InitTotalSensorCount(updateFrequency);
 
         // register custom hardware category
         _argus.RegisterCategories();
@@ -47,17 +51,8 @@ public class Plugin : IMoBroPlugin, IDisposable
         _argus.RegisterItems();
 
         // start polling metric values
-        int updateFrequency = _settings.GetValue("update_frequency", DefaultUpdateFrequencyMs);
-        _scheduler.Interval(UpdateMetricValues, TimeSpan.FromMilliseconds(updateFrequency), InitialDelay);
-    }
-
-    private void UpdateMetricValues()
-    {
-        _argus.UpdateMetricValues();
-    }
-
-    public void Dispose()
-    {
-        _argus.Dispose();
+        _scheduler.Interval(_argus.UpdateMetricValues,
+            TimeSpan.FromMilliseconds(updateFrequency),
+            TimeSpan.FromSeconds(_settings.GetValue("poll_delay", DefaultInitialDelay)));
     }
 }

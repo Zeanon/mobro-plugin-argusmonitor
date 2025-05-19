@@ -13,10 +13,7 @@ public static class ArgusMonitorUtilities
     {
         if (value == null) return null;
 
-        if (sensorType == "Text")
-        {
-            return value;
-        }
+        if (sensorType == "Text") return value;
 
         double doubleVal = Convert.ToDouble(value);
         return sensorType switch
@@ -96,14 +93,15 @@ public static class ArgusMonitorUtilities
     {
         return IdSanitationRegex.Replace(id.ToString(), "");
     }
-    public static string SensorID(string[] sensor_values)
-    {
-        return SanitizeId(sensor_values[3] + "_" + sensor_values[2] + "_" + sensor_values[4] + "_" + sensor_values[0]);
-    }
 
     public static string CoreClockID(string[] sensor_values)
     {
-        return SanitizeId(sensor_values[3] + "_Frequency_Clock_" + sensor_values[0]);
+        return SanitizeId(sensor_values[3] + "_Frequency_" + CommonGroup.Core_Clock + "_" + sensor_values[0]);
+    }
+
+    public static string SensorID(string[] sensor_values)
+    {
+        return SanitizeId(sensor_values[3] + "_" + sensor_values[2] + "_" + sensor_values[4] + "_" + sensor_values[0]);
     }
 
     public static string GroupID(string[] sensor_values)

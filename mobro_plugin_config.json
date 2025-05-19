@@ -120,6 +120,15 @@
       "required": false,
       "defaultValue": 0,
       "min": 0
+    },
+    {
+      "type": "number",
+      "name": "poll_delay",
+      "label": "settings.poll_delay.title",
+      "description": "settings.poll_delay.desc",
+      "required": false,
+      "defaultValue": 1,
+      "min": 0.5
     }
   ]
 }

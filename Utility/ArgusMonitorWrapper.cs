@@ -1,40 +1,42 @@
 using System;
 using System.Runtime.InteropServices;
-using System.Text;
 
-public static class ArgusMonitorWrapper
+
+namespace Zeanon.Plugin.ArgusMonitor.Utility;
+
+public static partial class ArgusMonitorWrapper
 {
     #region dllimports
     private const string _dllImportPath = @"Resources/libs/ArgusMonitorLink.dll";
 
-    [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern IntPtr Instantiate();
+    [LibraryImport(_dllImportPath)]
+    public static partial IntPtr Instantiate();
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int Start(this IntPtr t);
+    public static extern int Register(this IntPtr t, int polling_interval);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern bool CheckConnection(this IntPtr t);
+    public static extern bool Open(this IntPtr t);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int Stop(this IntPtr t);
+    public static extern int Close(this IntPtr t);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern void ParseSensorData(this IntPtr t);
+    public static extern int GetTotalSensorCount(this IntPtr t);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int GetDataLength(this IntPtr t);
+    public static extern void GetSensorData(this IntPtr t, AddArray add);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void AddArray([MarshalAs(UnmanagedType.LPArray, SizeConst = 5)] string[] sensor);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern void GetSensorData(this IntPtr t, StringBuilder buffer, int maxlen);
+    public static extern bool CheckArgusSignature(this IntPtr t);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern bool CheckData(this IntPtr t);
+    public static extern void SetSensorEnabled(this IntPtr t, string type, bool enabled);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern void SetSensorEnabled(this IntPtr t, StringBuilder name, bool enabled);
-
-    [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern bool GetSensorEnabled(this IntPtr t, StringBuilder name);
+    public static extern bool GetSensorEnabled(this IntPtr t, string type);
     #endregion
 }

@@ -20,5 +20,7 @@
   "settings.argus.desc": "Ob synthetische Argus Monitor Temperaturen überwacht werden sollen",
   "settings.argus.title": "Synthetisch",
   "settings.delay.desc": "Optionale Verzögerung vor der Initialisierung und Abfrage der Sensoren (in Sekunden)",
-  "settings.delay.title": "Initialisierungsverzögerung"
+  "settings.delay.title": "Initialisierungsverzögerung",
+  "settings.poll_delay.desc": "Verzögerung nach dem Initialisieren, bis das erste mal Daten abgefragt werden (in Sekunden)",
+  "settings.poll_delay.title": "Pollverzögerung"
 }

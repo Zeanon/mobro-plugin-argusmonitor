@@ -1,45 +1,45 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net8.0-windows</TargetFramework>
-        <RootNamespace>Zeanon.Plugin.ArgusMonitor</RootNamespace>
-        <Authors>Zeanon</Authors>
-        <Company>LynxCrew</Company>
-        <Product>-</Product>
-        <Description>ArgusMonitor Plugin for MoBro</Description>
-        <IsPackable>false</IsPackable>
-        <Title>MoBro ArgusMonitor Plugin</Title>
-        <Copyright>(C) Zeanon 2025</Copyright>
-        <PackageProjectUrl>https://github.com/Zeanon/mobro-plugin-argusmonitor/tree/main</PackageProjectUrl>
-        <VersionPrefix>0.1.6</VersionPrefix>
-        <Nullable>enable</Nullable>
-        <OutputType>Exe</OutputType>
-        <EnableDynamicLoading>true</EnableDynamicLoading>
-        <UseAppHost>false</UseAppHost>
-        <SelfContained>false</SelfContained>
-        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-        <LangVersion>11</LangVersion>
-        <InvariantGlobalization>true</InvariantGlobalization>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<RootNamespace>Zeanon.Plugin.ArgusMonitor</RootNamespace>
+		<Authors>Zeanon</Authors>
+		<Company>LynxCrew</Company>
+		<Product>-</Product>
+		<Description>ArgusMonitor Plugin for MoBro</Description>
+		<IsPackable>false</IsPackable>
+		<Title>MoBro ArgusMonitor Plugin</Title>
+		<Copyright>(C) Zeanon 2025</Copyright>
+		<PackageProjectUrl>https://github.com/Zeanon/mobro-plugin-argusmonitor/tree/main</PackageProjectUrl>
+		<VersionPrefix>0.1.7</VersionPrefix>
+		<Nullable>enable</Nullable>
+		<OutputType>Exe</OutputType>
+		<EnableDynamicLoading>true</EnableDynamicLoading>
+		<UseAppHost>false</UseAppHost>
+		<SelfContained>false</SelfContained>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+		<LangVersion>11</LangVersion>
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
 
 
-    <ItemGroup>
-        <PackageReference Include="MoBro.Plugin.SDK" Version="1.0.1" PrivateAssets="all" />
-    </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="MoBro.Plugin.SDK" Version="1.0.1" PrivateAssets="all" />
+	</ItemGroup>
 
-    <ItemGroup>
-        <Content Include="*.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-        </Content>
-    </ItemGroup>
+	<ItemGroup>
+		<Content Include="*.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+	</ItemGroup>
 
-    <ItemGroup>
-        <Content Include="Resources\**\*">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-        </Content>
-    </ItemGroup>
+	<ItemGroup>
+		<Content Include="Resources\**\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+	</ItemGroup>
 
 </Project>

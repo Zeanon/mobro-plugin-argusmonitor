@@ -18,5 +18,7 @@
   "settings.argus.desc": "Whether synthetic argus monitor values should be monitored",
   "settings.argus.title": "Synthetic",
   "settings.delay.desc": "Optional delay before initializing and querying sensors (in seconds)",
-  "settings.delay.title": "Initialization delay"
+  "settings.delay.title": "Initialization delay",
+  "settings.poll_delay.desc": "Delay after initializing before polling the sensors for the first time (in seconds)",
+  "settings.poll_delay.title": "Poll delay"
 }
