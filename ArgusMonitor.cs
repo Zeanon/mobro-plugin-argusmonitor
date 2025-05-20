@@ -365,8 +365,6 @@ public class ArgusMonitor : IDisposable
             _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Temperature_Temperature_Average), cpu_temps.Average());
             _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Temperature_Temperature_Min), cpu_temps.Min());
         }
-
-        GC.Collect();
     }
 
     private List<string[]> SensorData()

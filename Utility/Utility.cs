@@ -22,6 +22,7 @@ public static class ArgusMonitorUtilities
             "Usage" => doubleVal, // MB => Byte
             "Total" => doubleVal, // MB => Byte
             "Frequency" => doubleVal,
+            "Clock" => doubleVal,
             _ => doubleVal / 1_000_000
         };
     }
