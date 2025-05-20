@@ -247,10 +247,9 @@ public class ArgusMonitor : IDisposable
         }
 
         // get the data and then iterate over it to register all metrics and groups
-        var sensor_data = SensorData();
-        foreach (string[] sensor_values in sensor_data)
+        foreach (string[] sensor_values in SensorData())
         {
-            if (sensor_values.Length < 5 || sensor_values[2] == "Invalid")
+            if (sensor_values.Length < 5)
             {
                 continue;
             }
