@@ -10,6 +10,7 @@ using System.Threading;
 using Zeanon.Plugin.ArgusMonitor.CustomItem;
 using Zeanon.Plugin.ArgusMonitor.Enums;
 using Zeanon.Plugin.ArgusMonitor.Utility;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Zeanon.Plugin.ArgusMonitor;
 
@@ -48,51 +49,52 @@ public class ArgusMonitor : IDisposable
     {
         foreach (KeyValuePair<string, string> setting in Settings)
         {
-            argus_monitor.SetSensorEnabled(setting.Key, settings.GetValue(setting.Key, bool.Parse(setting.Value)));
+            argus_monitor.SetHardwareEnabled(setting.Key, settings.GetValue(setting.Key, bool.Parse(setting.Value)));
         }
     }
 
-    public void Init(int polling_intertval)
+    public void Open(int polling_interval)
     {
-        int errno = argus_monitor.Register(polling_intertval);
-        switch (errno)
+        if (argus_monitor != IntPtr.Zero)
         {
-            case 0:
-                return;
-            case 10:
-                _logger.LogError("ArgusMonitorLink instance already running, aborting...");
-                throw new PluginException("ArgusMonitorLink instance already running, aborting...")
-                    .AddDetail("timestamp", DateTime.UtcNow.ToString("o"))
-                    .AddDetail("pluginVersion", "0.1.5");
-            default:
-                _logger.LogError("Plugin failed to start ArgusMonitorLink, error code '{error}' , aborting...", errno);
-                throw new PluginException("Plugin failed to start ArgusMonitorLink, error code '" + errno + "' , aborting...")
-                    .AddDetail("timestamp", DateTime.UtcNow.ToString("o"))
-                    .AddDetail("pluginVersion", "0.1.5");
+            int errno = argus_monitor.Open();
+
+            switch (errno)
+            {
+                case 0:
+                    return;
+                case 1:
+                    _logger.LogError("Could not open file mapping, error code '{errno}'", errno);
+                    throw new PluginException("Could not open file mapping, error code '" + errno + "'")
+                        .AddDetail("timestamp", DateTime.UtcNow.ToString("o"))
+                        .AddDetail("pluginVersion", "0.1.8");
+                case 10:
+                    _logger.LogError("Could not obtain fileview, error code '{errno}'", errno);
+                    throw new PluginException("Could not obtain fileview, error code '" + errno + "'")
+                        .AddDetail("timestamp", DateTime.UtcNow.ToString("o"))
+                        .AddDetail("pluginVersion", "0.1.8");
+                default:
+                    _logger.LogError("Plugin failed to open ArgusMonitorLink, error code '{errno}'", errno);
+                    throw new PluginException("Plugin failed to open ArgusMonitorLink, error code '" + errno + "'")
+                        .AddDetail("timestamp", DateTime.UtcNow.ToString("o"))
+                        .AddDetail("pluginVersion", "0.1.8");
+            }
         }
     }
 
-    public void WaitForOpen(int polling_intertval)
-    {
-        while (!argus_monitor.Open())
-        {
-            Thread.Sleep(polling_intertval);
-        }
-    }
-
-    public void WaitForArgus(int polling_intertval)
+    public void WaitForArgus(int polling_interval)
     {
         while (!argus_monitor.CheckArgusSignature())
         {
-            Thread.Sleep(polling_intertval);
+            Thread.Sleep(polling_interval);
         }
     }
 
-    public void InitTotalSensorCount(int polling_intertval)
+    public void InitTotalSensorCount(int polling_interval)
     {
         while (argus_monitor.GetTotalSensorCount() == 0)
         {
-            Thread.Sleep(polling_intertval);
+            Thread.Sleep(polling_interval);
         }
         total_sensor_count = argus_monitor.GetTotalSensorCount();
     }
@@ -107,31 +109,41 @@ public class ArgusMonitor : IDisposable
             {
                 case 0:
                     return;
-                case 10:
-                    _logger.LogError("ArgusMonitorInstance not running, aborting...");
-                    throw new PluginException("ArgusMonitorInstance not running, aborting...")
+                case 1:
+                    _logger.LogError("Could not unmap view of file, error code '{errno}'", errno);
+                    throw new PluginException("Could not unmap view of file, error code '" + errno + "'")
                         .AddDetail("timestamp", DateTime.UtcNow.ToString("o"))
-                        .AddDetail("pluginVersion", "0.1.5");
+                        .AddDetail("pluginVersion", "0.1.8");
+                case 10:
+                    _logger.LogError("Could not close handle on file, error code '{errno}'", errno);
+                    throw new PluginException("Could not close handle on file, error code '" + errno + "'")
+                        .AddDetail("timestamp", DateTime.UtcNow.ToString("o"))
+                        .AddDetail("pluginVersion", "0.1.8");
+                case 11:
+                    _logger.LogError("Could not unmap view of file and close handle on file, error code '{errno}'", errno);
+                    throw new PluginException("Could not unmap view of file and close handle on file, error code '" + errno + "'")
+                        .AddDetail("timestamp", DateTime.UtcNow.ToString("o"))
+                        .AddDetail("pluginVersion", "0.1.8");
                 default:
                     _logger.LogError("Plugin failed to stop ArgusMonitorLink, error code '{errno}'", errno);
                     throw new PluginException("Plugin failed to stop ArgusMonitorLink, error code '" + errno + "'")
                         .AddDetail("timestamp", DateTime.UtcNow.ToString("o"))
-                        .AddDetail("pluginVersion", "0.1.5");
+                        .AddDetail("pluginVersion", "0.1.8");
             }
         }
     }
 
     public void RegisterCategories()
     {
-        if (argus_monitor.GetSensorEnabled("ArgusMonitor"))
+        if (argus_monitor.GetHardwareEnabled("ArgusMonitor"))
         {
             _service.Register(ArgusMonitorCategory.Synthetic);
         }
     }
 
-    public void RegisterItems()
+    public void RegisterItems(int polling_interval)
     {
-        bool cpu_enabled = argus_monitor.GetSensorEnabled(CPU);
+        bool cpu_enabled = argus_monitor.GetHardwareEnabled(CPU);
 
         // to ensure we are only registering groups once
         List<string> groups = new();
@@ -235,7 +247,8 @@ public class ArgusMonitor : IDisposable
         }
 
         // get the data and then iterate over it to register all metrics and groups
-        foreach (string[] sensor_values in SensorData())
+        var sensor_data = SensorData();
+        foreach (string[] sensor_values in sensor_data)
         {
             if (sensor_values.Length < 5 || sensor_values[2] == "Invalid")
             {
@@ -306,7 +319,7 @@ public class ArgusMonitor : IDisposable
 
             if (value != null
                 && ArgusMonitorUtilities.GetCategory(sensor_values[3]) == CoreCategory.Cpu
-                && argus_monitor.GetSensorEnabled(CPU))
+                && argus_monitor.GetHardwareEnabled(CPU))
             {
                 CoreMetricType type = ArgusMonitorUtilities.GetMetricType(sensor_values[2]);
 
@@ -353,13 +366,13 @@ public class ArgusMonitor : IDisposable
             _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Temperature_Temperature_Min), cpu_temps.Min());
         }
 
-        //GC.Collect();
+        GC.Collect();
     }
 
     private List<string[]> SensorData()
     {
-        List<string[]> sensor_data = new(total_sensor_count);
-        argus_monitor.GetSensorData(sensor_data.Add);
-        return sensor_data;
+        List<string[]> argus_monitor_data = new(total_sensor_count);
+        argus_monitor.GetSensorData(argus_monitor_data.Add);
+        return argus_monitor_data;
     }
 }

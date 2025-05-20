@@ -13,10 +13,10 @@ public static partial class ArgusMonitorWrapper
     public static partial IntPtr Instantiate();
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int Register(this IntPtr t, int polling_interval);
+    public static extern int Open(this IntPtr t);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern bool Open(this IntPtr t);
+    public static extern bool IsOpen(this IntPtr t);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
     public static extern int Close(this IntPtr t);
@@ -25,7 +25,7 @@ public static partial class ArgusMonitorWrapper
     public static extern int GetTotalSensorCount(this IntPtr t);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern void GetSensorData(this IntPtr t, AddArray add);
+    public static extern bool GetSensorData(this IntPtr t, AddArray add);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void AddArray([MarshalAs(UnmanagedType.LPArray, SizeConst = 5)] string[] sensor);
@@ -34,9 +34,9 @@ public static partial class ArgusMonitorWrapper
     public static extern bool CheckArgusSignature(this IntPtr t);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern void SetSensorEnabled(this IntPtr t, string type, bool enabled);
+    public static extern void SetHardwareEnabled(this IntPtr t, string type, bool enabled);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern bool GetSensorEnabled(this IntPtr t, string type);
+    public static extern bool GetHardwareEnabled(this IntPtr t, string type);
     #endregion
 }

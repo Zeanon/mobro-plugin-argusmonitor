@@ -31,12 +31,10 @@ public class Plugin : IMoBroPlugin
     private void InitArgus()
     {
         int updateFrequency = _settings.GetValue("update_frequency", DefaultUpdateFrequencyMs);
-        _argus.Init(updateFrequency);
-
         _argus.UpdateSettings(_settings);
 
         // wait for the argus api to connect to Argus Monitor
-        _argus.WaitForOpen(updateFrequency);
+        _argus.Open(updateFrequency);
 
         // wait for a proper connection and data
         _argus.WaitForArgus(updateFrequency);
@@ -48,7 +46,7 @@ public class Plugin : IMoBroPlugin
         _argus.RegisterCategories();
 
         // register groups and metrics
-        _argus.RegisterItems();
+        _argus.RegisterItems(updateFrequency);
 
         // start polling metric values
         _scheduler.Interval(_argus.UpdateMetricValues,
