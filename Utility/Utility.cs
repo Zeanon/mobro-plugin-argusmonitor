@@ -95,18 +95,18 @@ public static class ArgusMonitorUtilities
         return IdSanitationRegex.Replace(id.ToString(), "");
     }
 
-    public static string CoreClockID(string hardware_type, string sensor_name)
+    public static string CoreClockID(string hardwareType, string sensorName)
     {
-        return SanitizeId(hardware_type + "_Frequency_" + CommonGroup.Core_Clock + "_" + sensor_name);
+        return SanitizeId(hardwareType + "_Frequency_" + CommonGroup.Core_Clock + "_" + sensorName);
     }
 
-    public static string SensorID(string hardware_type, string sensor_type, string sensor_group, string sensor_name)
+    public static string SensorID(string hardwareType, string sensorType, string sensorGroup, string sensorName)
     {
-        return SanitizeId(hardware_type + "_" + sensor_type + "_" + sensor_group + "_" + sensor_name);
+        return SanitizeId(hardwareType + "_" + sensorType + "_" + sensorGroup + "_" + sensorName);
     }
 
-    public static string GroupID(string hardware_type, string sensor_group)
+    public static string GroupID(string hardwareType, string sensorGroup)
     {
-        return SanitizeId(hardware_type + "_" + sensor_group);
+        return SanitizeId(hardwareType + "_" + sensorGroup);
     }
 }

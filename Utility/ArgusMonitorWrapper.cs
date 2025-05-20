@@ -28,11 +28,11 @@ public static partial class ArgusMonitorWrapper
     public static extern bool GetSensorData(this IntPtr t, ProcessSensorData processSensorData);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void ProcessSensorData([MarshalAs(UnmanagedType.LPStr)] string sensor_name,
-                                           [MarshalAs(UnmanagedType.LPStr)] string sensor_value,
-                                           [MarshalAs(UnmanagedType.LPStr)] string sensor_type,
-                                           [MarshalAs(UnmanagedType.LPStr)] string hardware_type,
-                                           [MarshalAs(UnmanagedType.LPStr)] string sensor_group);
+    public delegate void ProcessSensorData([MarshalAs(UnmanagedType.LPStr)] string sensorName,
+                                           [MarshalAs(UnmanagedType.LPStr)] string sensorValue,
+                                           [MarshalAs(UnmanagedType.LPStr)] string sensorType,
+                                           [MarshalAs(UnmanagedType.LPStr)] string hardwareType,
+                                           [MarshalAs(UnmanagedType.LPStr)] string sensorGroup);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
     public static extern bool CheckArgusSignature(this IntPtr t);
