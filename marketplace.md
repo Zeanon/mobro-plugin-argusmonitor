@@ -38,6 +38,7 @@ This includes data from various devices such as:
 - And more...
 
 Small disclaimer: ArgusMonitor somehow doesnt export the CPU-Core temp to the API, easiest solution to get it is to just create a synthetic `max` temperature that only contains CPU-Core.
+You can also use the artificial `CPU Temperature Max` metric.
 
 ---
 
@@ -52,7 +53,12 @@ This plugin provides the following configurable settings:
 | Graphics Card    | enabled | Enables monitoring and inclusion of graphics card (GPU) metrics.                                                                                         |
 | Memory           | enabled | Enables monitoring and inclusion of memory (RAM) metrics.                                                                                                |
 | Motherboard      | enabled | Enables monitoring and inclusion of motherboard metrics.                                                                                                 |
-| Drives           | enabled | Enables monitoring and inclusion of drive (HDDs, SSDs, etc.) metrics.                                                                                    |                  |
+| Drives           | enabled | Enables monitoring and inclusion of drive (HDDs, SSDs, etc.) metrics.                                                                                    |
 | Network          | enabled | Enables monitoring and inclusion of network (NIC) metrics.                                                                                               |
 | Battery          | enabled | Enables monitoring and inclusion of battery metrics.                                                                                                     |
-| Synthetic          | enabled | Enables monitoring and inclusion of Argus Monitor Synthetic temperatures.                                                                                                      |
+| Argus Monitor    | enabled | Enables monitoring and inclusion of Argus Monitor Synthetic temperatures.                                                                                |
+
+## SDK
+
+This plugin is built using the [MoBro Plugin SDK](https://github.com/ModBros/mobro-plugin-sdk).  
+Developer documentation is available at [developer.mobro.app](https://developer.mobro.app).
