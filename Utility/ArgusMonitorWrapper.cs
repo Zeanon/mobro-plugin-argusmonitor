@@ -25,10 +25,14 @@ public static partial class ArgusMonitorWrapper
     public static extern int GetTotalSensorCount(this IntPtr t);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern bool GetSensorData(this IntPtr t, AddArray add);
+    public static extern bool GetSensorData(this IntPtr t, ProcessSensorData processSensorData);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void AddArray([MarshalAs(UnmanagedType.LPArray, SizeConst = 5)] string[] sensor);
+    public delegate void ProcessSensorData([MarshalAs(UnmanagedType.LPStr)] string sensor_name,
+                                           [MarshalAs(UnmanagedType.LPStr)] string sensor_value,
+                                           [MarshalAs(UnmanagedType.LPStr)] string sensor_type,
+                                           [MarshalAs(UnmanagedType.LPStr)] string hardware_type,
+                                           [MarshalAs(UnmanagedType.LPStr)] string sensor_group);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
     public static extern bool CheckArgusSignature(this IntPtr t);
@@ -37,6 +41,6 @@ public static partial class ArgusMonitorWrapper
     public static extern void SetHardwareEnabled(this IntPtr t, string type, bool enabled);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern bool GetHardwareEnabled(this IntPtr t, string type);
+    public static extern bool IsHardwareEnabled(this IntPtr t, string type);
     #endregion
 }

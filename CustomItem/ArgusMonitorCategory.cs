@@ -7,7 +7,7 @@ public static class ArgusMonitorCategory
 {
     public static readonly Category Synthetic = MoBroItem
       .CreateCategory()
-      .WithId("argusmonitor_synthetic")
+      .WithId("argusmonitor")
       .WithLabel("Argus Monitor")
       .Build();
 }

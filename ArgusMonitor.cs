@@ -135,7 +135,7 @@ public class ArgusMonitor : IDisposable
 
     public void RegisterCategories()
     {
-        if (argus_monitor.GetHardwareEnabled("ArgusMonitor"))
+        if (argus_monitor.IsHardwareEnabled("ArgusMonitor"))
         {
             _service.Register(ArgusMonitorCategory.Synthetic);
         }
@@ -143,7 +143,8 @@ public class ArgusMonitor : IDisposable
 
     public void RegisterItems(int polling_interval)
     {
-        bool cpu_enabled = argus_monitor.GetHardwareEnabled(CPU);
+        bool cpu_values = false;
+        bool cpu_enabled = argus_monitor.IsHardwareEnabled(CPU);
 
         // to ensure we are only registering groups once
         List<string> groups = new();
@@ -157,12 +158,65 @@ public class ArgusMonitor : IDisposable
             }
         }
 
-        if (cpu_enabled)
+        void register(string sensor_name, string sensor_value, string sensor_type, string hardware_type, string sensor_group)
         {
-            addGroup(CPU + "_" + CommonGroup.Temperature.ToString(), "Temperature");
-            addGroup(CPU + "_" + CommonGroup.Multiplier.ToString(), "Multiplier");
-            addGroup(CPU + "_" + CommonGroup.Core_Clock.ToString(), "Core Clock");
+            string group_id = ArgusMonitorUtilities.GroupID(hardware_type, sensor_group);
 
+            addGroup(group_id, sensor_group);
+
+            CoreMetricType type = ArgusMonitorUtilities.GetMetricType(sensor_type);
+            CoreCategory category = ArgusMonitorUtilities.GetCategory(hardware_type);
+
+            MetricBuilder.ICategoryStage type_stage = MoBroItem
+                .CreateMetric()
+                .WithId(ArgusMonitorUtilities.SensorID(hardware_type, sensor_type, sensor_group, sensor_name))
+                .WithLabel(sensor_name)
+                .OfType(type);
+
+            MetricBuilder.IGroupStage category_stage = hardware_type == "ArgusMonitor"
+                    ? type_stage.OfCategory(ArgusMonitorCategory.Synthetic)
+                    : type_stage.OfCategory(category);
+
+            MetricBuilder.IBuildStage group_stage = category_stage.OfGroup(group_id);
+
+            if (sensor_type == "Text")
+            {
+                _service.Register(group_stage.AsStaticValue().Build());
+            }
+            else
+            {
+                _service.Register(group_stage.Build());
+            }
+
+
+            // register artificial core clock metrics
+            if (cpu_enabled
+                && type == CoreMetricType.Multiplier
+                && category == CoreCategory.Cpu
+                && sensor_group == "Multiplier")
+            {
+                cpu_values = true;
+
+                addGroup(CPU + "_" + CommonGroup.Temperature.ToString(), "Temperature");
+                addGroup(CPU + "_" + CommonGroup.Multiplier.ToString(), "Multiplier");
+                addGroup(CPU + "_" + CommonGroup.Core_Clock.ToString(), "Core Clock");
+
+                _service.Register(MoBroItem
+                    .CreateMetric()
+                    .WithId(ArgusMonitorUtilities.CoreClockID(hardware_type, sensor_name))
+                    .WithLabel(sensor_name + " Clock")
+                    .OfType(CoreMetricType.Frequency)
+                    .OfCategory(category)
+                    .OfGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Core_Clock))
+                    .Build());
+            }
+        }
+
+        // Register all metrics
+        argus_monitor.GetSensorData(register);
+
+        if (cpu_enabled && cpu_values)
+        {
             // register some artificial metrics
             _service.Register(MoBroItem
                 .CreateMetric()
@@ -245,60 +299,6 @@ public class ArgusMonitor : IDisposable
                 .OfGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Core_Clock))
                 .Build());
         }
-
-        // get the data and then iterate over it to register all metrics and groups
-        foreach (string[] sensor_values in SensorData())
-        {
-            if (sensor_values.Length < 5)
-            {
-                continue;
-            }
-
-            string group_id = ArgusMonitorUtilities.GroupID(sensor_values);
-
-            addGroup(group_id, sensor_values[4]);
-
-            CoreMetricType type = ArgusMonitorUtilities.GetMetricType(sensor_values[2]);
-            CoreCategory category = ArgusMonitorUtilities.GetCategory(sensor_values[3]);
-
-            MetricBuilder.ICategoryStage type_stage = MoBroItem
-                .CreateMetric()
-                .WithId(ArgusMonitorUtilities.SensorID(sensor_values))
-                .WithLabel(sensor_values[0])
-                .OfType(type);
-
-            MetricBuilder.IGroupStage category_stage = sensor_values[3] == "ArgusMonitor"
-                    ? type_stage.OfCategory(ArgusMonitorCategory.Synthetic)
-                    : type_stage.OfCategory(category);
-
-            MetricBuilder.IBuildStage group_stage = category_stage.OfGroup(group_id);
-
-            if (sensor_values[2] == "Text")
-            {
-                _service.Register(group_stage.AsStaticValue().Build());
-            }
-            else
-            {
-                _service.Register(group_stage.Build());
-            }
-
-
-            // register artificial core clock metrics
-            if (cpu_enabled
-                && type == CoreMetricType.Multiplier
-                && category == CoreCategory.Cpu
-                && sensor_values[4] == "Multiplier")
-            {
-                _service.Register(MoBroItem
-                    .CreateMetric()
-                    .WithId(ArgusMonitorUtilities.CoreClockID(sensor_values))
-                    .WithLabel(sensor_values[0] + " Clock")
-                    .OfType(CoreMetricType.Frequency)
-                    .OfCategory(category)
-                    .OfGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Core_Clock))
-                    .Build());
-            }
-        }
     }
 
     public void UpdateMetricValues()
@@ -307,39 +307,36 @@ public class ArgusMonitor : IDisposable
         List<double> cpu_temps = new();
         Dictionary<string, double> multipliers = new();
 
-        foreach (string[] sensor_values in SensorData())
+        void update(string sensor_name, string sensor_value, string sensor_type, string hardware_type, string sensor_group)
         {
-            if (sensor_values.Length < 5 || sensor_values[2] == "Invalid")
+            object? metric_value = ArgusMonitorUtilities.GetMetricValue(sensor_value, sensor_type);
+
+            if (metric_value != null
+                && ArgusMonitorUtilities.GetCategory(hardware_type) == CoreCategory.Cpu
+                && argus_monitor.IsHardwareEnabled(CPU))
             {
-                continue;
-            }
+                CoreMetricType type = ArgusMonitorUtilities.GetMetricType(sensor_type);
 
-            object? value = ArgusMonitorUtilities.GetMetricValue(sensor_values[1], sensor_values[2]);
-
-            if (value != null
-                && ArgusMonitorUtilities.GetCategory(sensor_values[3]) == CoreCategory.Cpu
-                && argus_monitor.GetHardwareEnabled(CPU))
-            {
-                CoreMetricType type = ArgusMonitorUtilities.GetMetricType(sensor_values[2]);
-
-                if (type == CoreMetricType.Temperature && sensor_values[4] == "Temperature")
+                if (type == CoreMetricType.Temperature && sensor_group == "Temperature")
                 {
-                    cpu_temps.Add((double)value);
+                    cpu_temps.Add((double)metric_value);
                 }
 
-                if (type == CoreMetricType.Multiplier && sensor_values[4] == "Multiplier")
+                if (type == CoreMetricType.Multiplier && sensor_group == "Multiplier")
                 {
-                    multipliers.Add(ArgusMonitorUtilities.CoreClockID(sensor_values), (double)value);
+                    multipliers.Add(ArgusMonitorUtilities.CoreClockID(hardware_type, sensor_name), (double)metric_value);
                 }
 
-                if (type == CoreMetricType.Frequency && sensor_values[4] == "FSB")
+                if (type == CoreMetricType.Frequency && sensor_group == "FSB")
                 {
-                    fsb = (double)value;
+                    fsb = (double)metric_value;
                 }
             }
 
-            _service.UpdateMetricValue(ArgusMonitorUtilities.SensorID(sensor_values), value);
+            _service.UpdateMetricValue(ArgusMonitorUtilities.SensorID(hardware_type, sensor_type, sensor_group, sensor_name), sensor_value);
         }
+
+        argus_monitor.GetSensorData(update);
 
         // if we have a fsb value and multipliers, update the core clocks
         if (fsb != null && multipliers.Count > 0)
@@ -364,12 +361,5 @@ public class ArgusMonitor : IDisposable
             _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Temperature_Temperature_Average), cpu_temps.Average());
             _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Temperature_Temperature_Min), cpu_temps.Min());
         }
-    }
-
-    private List<string[]> SensorData()
-    {
-        List<string[]> argus_monitor_data = new(total_sensor_count);
-        argus_monitor.GetSensorData(argus_monitor_data.Add);
-        return argus_monitor_data;
     }
 }
