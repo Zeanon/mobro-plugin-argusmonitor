@@ -35,6 +35,13 @@ public static partial class ArgusMonitorWrapper
                                            [MarshalAs(UnmanagedType.LPStr)] string sensorGroup);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
+    public static extern bool UpdateSensorData(this IntPtr t, UpdateSensor UpdateSensorData);
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void UpdateSensor([MarshalAs(UnmanagedType.LPStr)] string sensorId,
+                                      [MarshalAs(UnmanagedType.LPStr)] string sensorValue);
+
+    [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
     public static extern bool CheckArgusSignature(this IntPtr t);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]

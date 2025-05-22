@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using MoBro.Plugin.SDK.Builders;
 using MoBro.Plugin.SDK.Enums;
 using MoBro.Plugin.SDK.Exceptions;
+using MoBro.Plugin.SDK.Models.Metrics;
 using MoBro.Plugin.SDK.Services;
 using System;
 using System.Collections.Generic;
@@ -285,63 +286,11 @@ public class ArgusMonitor : IDisposable
 
     public void UpdateMetricValues()
     {
-        double? fsb = null;
-        List<double> cpuTemps = new();
-        Dictionary<string, double> multipliers = new();
-
-        void update(string sensorName, string sensorValue, string sensorType, string hardwareType, string sensorGroup)
+        void update(string sensorId, string sensorValue)
         {
-            object? metricValue = ArgusMonitorUtilities.GetMetricValue(sensorValue, sensorType);
-
-            if (metricValue != null
-                && ArgusMonitorUtilities.GetCategory(hardwareType) == CoreCategory.Cpu
-                && argus_monitor.IsHardwareEnabled(CPU))
-            {
-                CoreMetricType type = ArgusMonitorUtilities.GetMetricType(sensorType);
-
-                if (type == CoreMetricType.Temperature && sensorGroup == "Temperature")
-                {
-                    cpuTemps.Add((double)metricValue);
-                }
-
-                if (type == CoreMetricType.Multiplier && sensorGroup == "Multiplier")
-                {
-                    multipliers.Add(ArgusMonitorUtilities.CoreClockID(hardwareType, sensorName), (double)metricValue);
-                }
-
-                if (type == CoreMetricType.Frequency && sensorGroup == "FSB")
-                {
-                    fsb = (double)metricValue;
-                }
-            }
-
-            _service.UpdateMetricValue(ArgusMonitorUtilities.SensorID(hardwareType, sensorType, sensorGroup, sensorName), metricValue);
+            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(sensorId), sensorValue);
         }
 
-        argus_monitor.GetSensorData(update);
-
-        // if we have a fsb value and multipliers, update the core clocks
-        if (fsb != null && multipliers.Count > 0)
-        {
-            foreach (KeyValuePair<string, double> multiplier in multipliers)
-            {
-                _service.UpdateMetricValue(multiplier.Key, multiplier.Value * fsb);
-            }
-
-            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Multiplier_Multiplier_Max), multipliers.Values.Max());
-            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Frequency_Core_Clock_Max), multipliers.Values.Max() * fsb);
-            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Multiplier_Multiplier_Average), multipliers.Values.Average());
-            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Frequency_Core_Clock_Average), multipliers.Values.Average() * fsb);
-            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Multiplier_Multiplier_Min), multipliers.Values.Min());
-            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Frequency_Core_Clock_Min), multipliers.Values.Min() * fsb);
-        }
-
-        // if we have cpu temp values, update the max
-        if (cpuTemps.Count > 0)
-        {
-            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Temperature_Temperature_Max), cpuTemps.Max());
-            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Temperature_Temperature_Average), cpuTemps.Average());
-            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Temperature_Temperature_Min), cpuTemps.Min());
-        }
+        argus_monitor.UpdateSensorData(update);
     }
 }

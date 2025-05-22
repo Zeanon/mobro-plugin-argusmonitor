@@ -97,7 +97,7 @@ public static class ArgusMonitorUtilities
 
     public static string CoreClockID(string hardwareType, string sensorName)
     {
-        return SanitizeId(hardwareType + "_Frequency_" + CommonGroup.Core_Clock + "_" + sensorName);
+        return SanitizeId(hardwareType + "_Frequency_" + CommonGroup.Core_Clock.ToString() + "_" + sensorName);
     }
 
     public static string SensorID(string hardwareType, string sensorType, string sensorGroup, string sensorName)
