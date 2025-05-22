@@ -2,6 +2,8 @@ using Microsoft.Extensions.Logging;
 using MoBro.Plugin.SDK.Builders;
 using MoBro.Plugin.SDK.Enums;
 using MoBro.Plugin.SDK.Exceptions;
+using MoBro.Plugin.SDK.Models.Categories;
+using MoBro.Plugin.SDK.Models.Metrics;
 using MoBro.Plugin.SDK.Services;
 using System;
 using System.Collections.Generic;
@@ -94,22 +96,22 @@ public class ArgusMonitor : IDisposable
                     _logger.LogError("Could not unmap view of file, error code '{errno}'", errno);
                     throw new PluginException("Could not unmap view of file, error code '" + errno + "'")
                         .AddDetail("timestamp", DateTime.UtcNow.ToString("o"))
-                        .AddDetail("pluginVersion", "0.1.9");
+                        .AddDetail("pluginVersion", "0.2.0");
                 case 10:
                     _logger.LogError("Could not close handle on file, error code '{errno}'", errno);
                     throw new PluginException("Could not close handle on file, error code '" + errno + "'")
                         .AddDetail("timestamp", DateTime.UtcNow.ToString("o"))
-                        .AddDetail("pluginVersion", "0.1.9");
+                        .AddDetail("pluginVersion", "0.2.0");
                 case 11:
                     _logger.LogError("Could not unmap view of file and close handle on file, error code '{errno}'", errno);
                     throw new PluginException("Could not unmap view of file and close handle on file, error code '" + errno + "'")
                         .AddDetail("timestamp", DateTime.UtcNow.ToString("o"))
-                        .AddDetail("pluginVersion", "0.1.9");
+                        .AddDetail("pluginVersion", "0.2.0");
                 default:
                     _logger.LogError("Plugin failed to stop ArgusMonitorLink, error code '{errno}'", errno);
                     throw new PluginException("Plugin failed to stop ArgusMonitorLink, error code '" + errno + "'")
                         .AddDetail("timestamp", DateTime.UtcNow.ToString("o"))
-                        .AddDetail("pluginVersion", "0.1.9");
+                        .AddDetail("pluginVersion", "0.2.0");
             }
         }
     }
@@ -124,11 +126,14 @@ public class ArgusMonitor : IDisposable
 
     public void RegisterItems(int pollingInterval)
     {
-        bool cpuValues = false;
         bool cpuEnabled = argus_monitor.IsHardwareEnabled(CPU);
+
+        List<string> cpuIds = new();
 
         // to ensure we are only registering groups once
         List<string> groups = new();
+
+        Dictionary<string, List<string[]>> gpus = new();
 
         void addGroup(string groupId, string groupName)
         {
@@ -139,9 +144,37 @@ public class ArgusMonitor : IDisposable
             }
         }
 
-        void register(string sensorName, string sensor_value, string sensorType, string hardwareType, string sensorGroup)
+        void register(string sensorName, string sensorValue, string sensorType, string hardwareType, string sensorGroup, string dataIndex, string sensorIndex)
         {
-            string groupId = ArgusMonitorUtilities.GroupID(hardwareType, sensorGroup);
+            if (hardwareType == "GPU")
+            {
+                if (!gpus.ContainsKey(sensorIndex))
+                {
+                    gpus[sensorIndex] = new();
+                }
+                gpus[sensorIndex].Add(new string[] { sensorName, sensorValue, sensorType, hardwareType, sensorGroup, dataIndex, sensorIndex });
+                return;
+            }
+
+            string groupId = "CPU" == hardwareType ? ArgusMonitorUtilities.GroupID(hardwareType, sensorGroup, sensorIndex) : ArgusMonitorUtilities.GroupID(hardwareType, sensorGroup);
+
+            string? cpuId = null;
+            Category? cpu_category = null;
+
+            if ("CPU" == hardwareType)
+            {
+                cpuId = sensorIndex.ToString();
+                if (!cpuIds.Contains(cpuId))
+                {
+                    cpu_category = MoBroItem
+                        .CreateCategory()
+                        .WithId(ArgusMonitorUtilities.SanitizeId("CPU_" + sensorIndex))
+                        .WithLabel("CPU [" + sensorIndex + "]")
+                        .Build();
+                    _service.Register(cpu_category);
+                    cpuIds.Add(cpuId);
+                }
+            }
 
             addGroup(ArgusMonitorUtilities.SanitizeId(groupId), sensorGroup);
 
@@ -150,12 +183,18 @@ public class ArgusMonitor : IDisposable
 
             MetricBuilder.ICategoryStage type_stage = MoBroItem
                 .CreateMetric()
-                .WithId(ArgusMonitorUtilities.SensorID(hardwareType, sensorType, sensorGroup, sensorName))
-                .WithLabel(sensorName)
+                .WithId(ArgusMonitorUtilities.SensorID(hardwareType, sensorType, sensorGroup, sensorName, sensorIndex, dataIndex))
+                .WithLabel(hardwareType == "Network"
+                           ? dataIndex == "0"
+                           ? sensorName + " (Up)"
+                           : sensorName + " (Down)"
+                           : sensorName)
                 .OfType(type);
 
-            MetricBuilder.IGroupStage category_stage = hardwareType == "ArgusMonitor"
+            MetricBuilder.IGroupStage category_stage = "ArgusMonitor" == hardwareType
                     ? type_stage.OfCategory(ArgusMonitorCategory.Synthetic)
+                    : null != cpuId
+                    ? type_stage.OfCategory("CPU_" + cpuId)
                     : type_stage.OfCategory(category);
 
             MetricBuilder.IBuildStage group_stage = category_stage.OfGroup(groupId);
@@ -163,7 +202,7 @@ public class ArgusMonitor : IDisposable
             if (sensorType == "Text" || sensorName == "Available Sensors")
             {
                 _service.Register(group_stage.AsStaticValue().Build());
-                _service.UpdateMetricValue(ArgusMonitorUtilities.SensorID(hardwareType, sensorType, sensorGroup, sensorName), sensor_value);
+                _service.UpdateMetricValue(ArgusMonitorUtilities.SensorID(hardwareType, sensorType, sensorGroup, sensorName, sensorIndex, dataIndex), sensorValue);
             }
             else
             {
@@ -174,22 +213,20 @@ public class ArgusMonitor : IDisposable
             // register artificial core clock metrics
             if (cpuEnabled
                 && type == CoreMetricType.Multiplier
-                && category == CoreCategory.Cpu
+                && null != cpuId
                 && sensorGroup == "Multiplier")
             {
-                cpuValues = true;
-
-                addGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Temperature.ToString()), "Temperature");
-                addGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Multiplier.ToString()), "Multiplier");
-                addGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Core_Clock.ToString()), "Core Clock");
+                addGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Temperature.ToString() + "_" + cpuId), "Temperature");
+                addGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Multiplier.ToString() + "_" + cpuId), "Multiplier");
+                addGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Core_Clock.ToString() + "_" + cpuId), "Core Clock");
 
                 _service.Register(MoBroItem
                     .CreateMetric()
-                    .WithId(ArgusMonitorUtilities.CoreClockID(hardwareType, sensorName))
+                    .WithId(ArgusMonitorUtilities.CoreClockID(hardwareType, sensorName, sensorIndex, dataIndex))
                     .WithLabel(sensorName + " Clock")
                     .OfType(CoreMetricType.Frequency)
-                    .OfCategory(category)
-                    .OfGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Core_Clock))
+                    .OfCategory("CPU_" + cpuId)
+                    .OfGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Core_Clock.ToString() + "_" + cpuId))
                     .Build());
             }
         }
@@ -197,89 +234,137 @@ public class ArgusMonitor : IDisposable
         // Register all metrics
         argus_monitor.GetSensorData(register);
 
-        if (cpuEnabled && cpuValues)
+        foreach(var gpu in gpus)
         {
-            // register some artificial metrics
-            _service.Register(MoBroItem
-                .CreateMetric()
-                .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Temperature_Temperature_Max))
-                .WithLabel("CPU Temperature Max")
-                .OfType(CoreMetricType.Temperature)
-                .OfCategory(CoreCategory.Cpu)
-                .OfGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Temperature))
-                .Build());
+            Category? gpu_category = null;
+            foreach (var sensor in gpu.Value)
+            {
+                // sensor: sensorName, sensorValue, sensorType, hardwareType, sensorGroup, dataIndex, sensorIndex
+                if ("Name" == sensor[0])
+                {
+                    gpu_category = MoBroItem
+                        .CreateCategory()
+                        .WithId(ArgusMonitorUtilities.SanitizeId("GPU_" + sensor[5]))
+                        .WithLabel(sensor[1])
+                        .Build();
+                    _service.Register(gpu_category);
+                }
+            }
+            if (null != gpu_category)
+            {
+                foreach (var sensor in gpu.Value)
+                {
+                    string groupId = ArgusMonitorUtilities.GroupID(sensor[3], sensor[4], sensor[6]);
 
-            _service.Register(MoBroItem
-                .CreateMetric()
-                .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Multiplier_Multiplier_Max))
-                .WithLabel("CPU Multiplier Max")
-                .OfType(CoreMetricType.Multiplier)
-                .OfCategory(CoreCategory.Cpu)
-                .OfGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Multiplier))
-                .Build());
+                    addGroup(ArgusMonitorUtilities.SanitizeId(groupId), sensor[4]);
 
-            _service.Register(MoBroItem
-                .CreateMetric()
-                .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Frequency_Core_Clock_Max))
-                .WithLabel("CPU Clock Max")
-                .OfType(CoreMetricType.Frequency)
-                .OfCategory(CoreCategory.Cpu)
-                .OfGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Core_Clock))
-                .Build());
+                    MetricBuilder.IBuildStage group_stage = MoBroItem
+                        .CreateMetric()
+                        .WithId(ArgusMonitorUtilities.SensorID(sensor[3], sensor[2], sensor[4], sensor[0], sensor[6], sensor[5]))
+                        .WithLabel(sensor[0])
+                        .OfType(ArgusMonitorUtilities.GetMetricType(sensor[2]))
+                        .OfCategory(gpu_category)
+                        .OfGroup(groupId);
 
-            _service.Register(MoBroItem
-                .CreateMetric()
-                .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Temperature_Temperature_Average))
-                .WithLabel("CPU Temperature Average")
-                .OfType(CoreMetricType.Temperature)
-                .OfCategory(CoreCategory.Cpu)
-                .OfGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Temperature))
-                .Build());
+                    if ("Name" == sensor[0])
+                    {
+                        _service.Register(group_stage.AsStaticValue().Build());
+                        _service.UpdateMetricValue(ArgusMonitorUtilities.SensorID(sensor[3], sensor[2], sensor[4], sensor[0], sensor[6], sensor[5]), sensor[1]);
+                    }
+                    else
+                    {
+                        _service.Register(group_stage.Build());
+                    }
+                }
+            }
+        }
 
-            _service.Register(MoBroItem
-                .CreateMetric()
-                .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Multiplier_Multiplier_Average))
-                .WithLabel("CPU Multiplier Average")
-                .OfType(CoreMetricType.Multiplier)
-                .OfCategory(CoreCategory.Cpu)
-                .OfGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Multiplier))
-                .Build());
+        if (cpuEnabled)
+        {
+            foreach (var cpuId in cpuIds)
+            {
+                // register some artificial metrics
+                _service.Register(MoBroItem
+                    .CreateMetric()
+                    .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Temperature_Temperature_Max.ToString() + "_" + cpuId))
+                    .WithLabel("CPU Temperature Max")
+                    .OfType(CoreMetricType.Temperature)
+                    .OfCategory("CPU_" + cpuId)
+                    .OfGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Temperature.ToString() + "_" + cpuId))
+                    .Build());
 
-            _service.Register(MoBroItem
-                .CreateMetric()
-                .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Frequency_Core_Clock_Average))
-                .WithLabel("CPU Clock Average")
-                .OfType(CoreMetricType.Frequency)
-                .OfCategory(CoreCategory.Cpu)
-                .OfGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Core_Clock))
-                .Build());
+                _service.Register(MoBroItem
+                    .CreateMetric()
+                    .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Multiplier_Multiplier_Max.ToString() + "_" + cpuId))
+                    .WithLabel("CPU Multiplier Max")
+                    .OfType(CoreMetricType.Multiplier)
+                    .OfCategory("CPU_" + cpuId)
+                    .OfGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Multiplier.ToString() + "_" + cpuId))
+                    .Build());
 
-            _service.Register(MoBroItem
-                .CreateMetric()
-                .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Temperature_Temperature_Min))
-                .WithLabel("CPU Temperature Min")
-                .OfType(CoreMetricType.Temperature)
-                .OfCategory(CoreCategory.Cpu)
-                .OfGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Temperature))
-                .Build());
+                _service.Register(MoBroItem
+                    .CreateMetric()
+                    .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Frequency_Core_Clock_Max.ToString() + "_" + cpuId))
+                    .WithLabel("CPU Clock Max")
+                    .OfType(CoreMetricType.Frequency)
+                    .OfCategory("CPU_" + cpuId)
+                    .OfGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Core_Clock.ToString() + "_" + cpuId))
+                    .Build());
 
-            _service.Register(MoBroItem
-                .CreateMetric()
-                .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Multiplier_Multiplier_Min))
-                .WithLabel("CPU Multiplier Min")
-                .OfType(CoreMetricType.Multiplier)
-                .OfCategory(CoreCategory.Cpu)
-                .OfGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Multiplier))
-                .Build());
+                _service.Register(MoBroItem
+                    .CreateMetric()
+                    .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Temperature_Temperature_Average.ToString() + "_" + cpuId))
+                    .WithLabel("CPU Temperature Average")
+                    .OfType(CoreMetricType.Temperature)
+                    .OfCategory("CPU_" + cpuId)
+                    .OfGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Temperature.ToString() + "_" + cpuId))
+                    .Build());
 
-            _service.Register(MoBroItem
-                .CreateMetric()
-                .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Frequency_Core_Clock_Min))
-                .WithLabel("CPU Clock Min")
-                .OfType(CoreMetricType.Frequency)
-                .OfCategory(CoreCategory.Cpu)
-                .OfGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Core_Clock))
-                .Build());
+                _service.Register(MoBroItem
+                    .CreateMetric()
+                    .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Multiplier_Multiplier_Average.ToString() + "_" + cpuId))
+                    .WithLabel("CPU Multiplier Average")
+                    .OfType(CoreMetricType.Multiplier)
+                    .OfCategory("CPU_" + cpuId)
+                    .OfGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Multiplier.ToString() + "_" + cpuId))
+                    .Build());
+
+                _service.Register(MoBroItem
+                    .CreateMetric()
+                    .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Frequency_Core_Clock_Average.ToString() + "_" + cpuId))
+                    .WithLabel("CPU Clock Average")
+                    .OfType(CoreMetricType.Frequency)
+                    .OfCategory("CPU_" + cpuId)
+                    .OfGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Core_Clock.ToString() + "_" + cpuId))
+                    .Build());
+
+                _service.Register(MoBroItem
+                    .CreateMetric()
+                    .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Temperature_Temperature_Min.ToString() + "_" + cpuId))
+                    .WithLabel("CPU Temperature Min")
+                    .OfType(CoreMetricType.Temperature)
+                    .OfCategory("CPU_" + cpuId)
+                    .OfGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Temperature.ToString() + "_" + cpuId))
+                    .Build());
+
+                _service.Register(MoBroItem
+                    .CreateMetric()
+                    .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Multiplier_Multiplier_Min.ToString() + "_" + cpuId))
+                    .WithLabel("CPU Multiplier Min")
+                    .OfType(CoreMetricType.Multiplier)
+                    .OfCategory("CPU_" + cpuId)
+                    .OfGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Multiplier.ToString() + "_" + cpuId))
+                    .Build());
+
+                _service.Register(MoBroItem
+                    .CreateMetric()
+                    .WithId(ArgusMonitorUtilities.SanitizeId(CommonID.CPU_Frequency_Core_Clock_Min.ToString() + "_" + cpuId))
+                    .WithLabel("CPU Clock Min")
+                    .OfType(CoreMetricType.Frequency)
+                    .OfCategory("CPU_" + cpuId)
+                    .OfGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Core_Clock.ToString() + "_" + cpuId))
+                    .Build());
+            }
         }
     }
 
