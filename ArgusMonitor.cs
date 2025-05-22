@@ -3,7 +3,6 @@ using MoBro.Plugin.SDK.Builders;
 using MoBro.Plugin.SDK.Enums;
 using MoBro.Plugin.SDK.Exceptions;
 using MoBro.Plugin.SDK.Models.Categories;
-using MoBro.Plugin.SDK.Models.Metrics;
 using MoBro.Plugin.SDK.Services;
 using System;
 using System.Collections.Generic;
@@ -144,24 +143,27 @@ public class ArgusMonitor : IDisposable
             }
         }
 
-        void register(string sensorName, string sensorValue, string sensorType, string hardwareType, string sensorGroup, string dataIndex, string sensorIndex)
+        void register(string sensorName, string sensorValue, string sensorType, string hardwareType, string sensorGroup, string sensorIndex, string dataIndex)
         {
-            if (hardwareType == "GPU")
+            CoreCategory category = ArgusMonitorUtilities.GetCategory(hardwareType);
+            CoreMetricType type = ArgusMonitorUtilities.GetMetricType(sensorType);
+
+            if (CoreCategory.Gpu == category)
             {
                 if (!gpus.ContainsKey(sensorIndex))
                 {
                     gpus[sensorIndex] = new();
                 }
-                gpus[sensorIndex].Add(new string[] { sensorName, sensorValue, sensorType, hardwareType, sensorGroup, dataIndex, sensorIndex });
+                gpus[sensorIndex].Add(new string[] { sensorName, sensorValue, sensorType, hardwareType, sensorGroup, sensorIndex, dataIndex });
                 return;
             }
 
-            string groupId = "CPU" == hardwareType ? ArgusMonitorUtilities.GroupID(hardwareType, sensorGroup, sensorIndex) : ArgusMonitorUtilities.GroupID(hardwareType, sensorGroup);
+            string groupId = CoreCategory.Cpu == category ? ArgusMonitorUtilities.GroupID(hardwareType, sensorGroup, sensorIndex) : ArgusMonitorUtilities.GroupID(hardwareType, sensorGroup);
 
             string? cpuId = null;
             Category? cpu_category = null;
 
-            if ("CPU" == hardwareType)
+            if (CoreCategory.Cpu == category)
             {
                 cpuId = sensorIndex.ToString();
                 if (!cpuIds.Contains(cpuId))
@@ -178,13 +180,10 @@ public class ArgusMonitor : IDisposable
 
             addGroup(ArgusMonitorUtilities.SanitizeId(groupId), sensorGroup);
 
-            CoreMetricType type = ArgusMonitorUtilities.GetMetricType(sensorType);
-            CoreCategory category = ArgusMonitorUtilities.GetCategory(hardwareType);
-
             MetricBuilder.ICategoryStage type_stage = MoBroItem
                 .CreateMetric()
                 .WithId(ArgusMonitorUtilities.SensorID(hardwareType, sensorType, sensorGroup, sensorName, sensorIndex, dataIndex))
-                .WithLabel(hardwareType == "Network"
+                .WithLabel(CoreCategory.Network == category
                            ? dataIndex == "0"
                            ? sensorName + " (Up)"
                            : sensorName + " (Down)"
@@ -212,7 +211,7 @@ public class ArgusMonitor : IDisposable
 
             // register artificial core clock metrics
             if (cpuEnabled
-                && type == CoreMetricType.Multiplier
+                && CoreMetricType.Multiplier == type
                 && null != cpuId
                 && sensorGroup == "Multiplier")
             {
@@ -234,12 +233,12 @@ public class ArgusMonitor : IDisposable
         // Register all metrics
         argus_monitor.GetSensorData(register);
 
-        foreach(var gpu in gpus)
+        foreach(KeyValuePair<string, List<string[]>> gpu in gpus)
         {
             Category? gpu_category = null;
-            foreach (var sensor in gpu.Value)
+            foreach (string[] sensor in gpu.Value)
             {
-                // sensor: sensorName, sensorValue, sensorType, hardwareType, sensorGroup, dataIndex, sensorIndex
+                // sensor: sensorName, sensorValue, sensorType, hardwareType, sensorGroup, sensorIndex, dataIndex
                 if ("Name" == sensor[0])
                 {
                     gpu_category = MoBroItem
@@ -252,15 +251,15 @@ public class ArgusMonitor : IDisposable
             }
             if (null != gpu_category)
             {
-                foreach (var sensor in gpu.Value)
+                foreach (string[] sensor in gpu.Value)
                 {
-                    string groupId = ArgusMonitorUtilities.GroupID(sensor[3], sensor[4], sensor[6]);
+                    string groupId = ArgusMonitorUtilities.GroupID(sensor[3], sensor[4], sensor[5]);
 
                     addGroup(ArgusMonitorUtilities.SanitizeId(groupId), sensor[4]);
 
                     MetricBuilder.IBuildStage group_stage = MoBroItem
                         .CreateMetric()
-                        .WithId(ArgusMonitorUtilities.SensorID(sensor[3], sensor[2], sensor[4], sensor[0], sensor[6], sensor[5]))
+                        .WithId(ArgusMonitorUtilities.SensorID(sensor[3], sensor[2], sensor[4], sensor[0], sensor[5], sensor[6]))
                         .WithLabel(sensor[0])
                         .OfType(ArgusMonitorUtilities.GetMetricType(sensor[2]))
                         .OfCategory(gpu_category)
@@ -269,7 +268,7 @@ public class ArgusMonitor : IDisposable
                     if ("Name" == sensor[0])
                     {
                         _service.Register(group_stage.AsStaticValue().Build());
-                        _service.UpdateMetricValue(ArgusMonitorUtilities.SensorID(sensor[3], sensor[2], sensor[4], sensor[0], sensor[6], sensor[5]), sensor[1]);
+                        _service.UpdateMetricValue(ArgusMonitorUtilities.SensorID(sensor[3], sensor[2], sensor[4], sensor[0], sensor[5], sensor[6]), sensor[1]);
                     }
                     else
                     {
@@ -281,7 +280,7 @@ public class ArgusMonitor : IDisposable
 
         if (cpuEnabled)
         {
-            foreach (var cpuId in cpuIds)
+            foreach (string cpuId in cpuIds)
             {
                 // register some artificial metrics
                 _service.Register(MoBroItem

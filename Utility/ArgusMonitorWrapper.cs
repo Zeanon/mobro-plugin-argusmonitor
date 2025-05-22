@@ -33,8 +33,8 @@ public static partial class ArgusMonitorWrapper
                                            [MarshalAs(UnmanagedType.LPStr)] string sensorType,
                                            [MarshalAs(UnmanagedType.LPStr)] string hardwareType,
                                            [MarshalAs(UnmanagedType.LPStr)] string sensorGroup,
-                                           [MarshalAs(UnmanagedType.LPStr)] string data_index,
-                                           [MarshalAs(UnmanagedType.LPStr)] string sensor_index);
+                                           [MarshalAs(UnmanagedType.LPStr)] string sensor_index,
+                                           [MarshalAs(UnmanagedType.LPStr)] string data_index);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
     public static extern bool UpdateSensorData(this IntPtr t, Update update);
