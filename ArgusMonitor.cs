@@ -2,16 +2,14 @@ using Microsoft.Extensions.Logging;
 using MoBro.Plugin.SDK.Builders;
 using MoBro.Plugin.SDK.Enums;
 using MoBro.Plugin.SDK.Exceptions;
-using MoBro.Plugin.SDK.Models.Metrics;
 using MoBro.Plugin.SDK.Services;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using Zeanon.Plugin.ArgusMonitor.CustomItem;
 using Zeanon.Plugin.ArgusMonitor.Enums;
 using Zeanon.Plugin.ArgusMonitor.Utility;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+
 
 namespace Zeanon.Plugin.ArgusMonitor;
 
@@ -137,7 +135,7 @@ public class ArgusMonitor : IDisposable
             if (!groups.Contains(groupId))
             {
                 groups.Add(groupId);
-                _service.Register(MoBroItem.CreateGroup().WithId(ArgusMonitorUtilities.SanitizeId(groupId)).WithLabel(groupName).Build());
+                _service.Register(MoBroItem.CreateGroup().WithId(groupId).WithLabel(groupName).Build());
             }
         }
 
@@ -145,7 +143,7 @@ public class ArgusMonitor : IDisposable
         {
             string groupId = ArgusMonitorUtilities.GroupID(hardwareType, sensorGroup);
 
-            addGroup(groupId, sensorGroup);
+            addGroup(ArgusMonitorUtilities.SanitizeId(groupId), sensorGroup);
 
             CoreMetricType type = ArgusMonitorUtilities.GetMetricType(sensorType);
             CoreCategory category = ArgusMonitorUtilities.GetCategory(hardwareType);
@@ -162,7 +160,7 @@ public class ArgusMonitor : IDisposable
 
             MetricBuilder.IBuildStage group_stage = category_stage.OfGroup(groupId);
 
-            if (sensorType == "Text")
+            if (sensorType == "Text" || sensorName == "Available Sensors")
             {
                 _service.Register(group_stage.AsStaticValue().Build());
             }
@@ -180,9 +178,9 @@ public class ArgusMonitor : IDisposable
             {
                 cpuValues = true;
 
-                addGroup(CPU + "_" + CommonGroup.Temperature.ToString(), "Temperature");
-                addGroup(CPU + "_" + CommonGroup.Multiplier.ToString(), "Multiplier");
-                addGroup(CPU + "_" + CommonGroup.Core_Clock.ToString(), "Core Clock");
+                addGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Temperature.ToString()), "Temperature");
+                addGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Multiplier.ToString()), "Multiplier");
+                addGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Core_Clock.ToString()), "Core Clock");
 
                 _service.Register(MoBroItem
                     .CreateMetric()
