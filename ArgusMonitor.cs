@@ -163,6 +163,7 @@ public class ArgusMonitor : IDisposable
             if (sensorType == "Text" || sensorName == "Available Sensors")
             {
                 _service.Register(group_stage.AsStaticValue().Build());
+                _service.UpdateMetricValue(ArgusMonitorUtilities.SensorID(hardwareType, sensorType, sensorGroup, sensorName), sensor_value);
             }
             else
             {
