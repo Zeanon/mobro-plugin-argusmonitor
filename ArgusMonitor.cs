@@ -233,7 +233,7 @@ public class ArgusMonitor : IDisposable
         // Register all metrics
         argus_monitor.GetSensorData(register);
 
-        foreach(KeyValuePair<string, List<string[]>> gpu in gpus)
+        foreach (KeyValuePair<string, List<string[]>> gpu in gpus)
         {
             Category? gpu_category = null;
             foreach (string[] sensor in gpu.Value)
