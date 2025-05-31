@@ -7,6 +7,8 @@ namespace Zeanon.Plugin.ArgusMonitor;
 
 public class Plugin : IMoBroPlugin
 {
+    public const string VERSION = "0.2.0";
+
     private const int DefaultInitialDelay = 1;
     private const int DefaultUpdateFrequencyMs = 1000;
     private const int DefaultInitDelay = 0;
@@ -46,7 +48,7 @@ public class Plugin : IMoBroPlugin
         _argus.RegisterCategories();
 
         // register groups and metrics
-        _argus.RegisterItems(updateFrequency);
+        _argus.RegisterItems();
 
         // start polling metric values
         _scheduler.Interval(_argus.UpdateMetricValues,

@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Reworked metric ids and hardware groups so the plugin should now be able to handle multi cpu and multi gpu systems and also will properly display sensors and fans if multiple have the same name
+- Reworked metric ids and hardware groups so the plugin should now be able to handle multi cpu and multi gpu systems and also will properly display sensors and fans if multiple have the same name, also changing the name of a fan/temp sensor in ArgusMonitor does not change the ID anymore
+- General small performance improvements
 
 ## 0.1.9 - 2025-05-21
 
