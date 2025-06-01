@@ -7,7 +7,7 @@ namespace Zeanon.Plugin.ArgusMonitor;
 
 public class Plugin : IMoBroPlugin
 {
-    public const string VERSION = "0.2.0";
+    public static readonly string VERSION;
 
     private const int DefaultInitialDelay = 1;
     private const int DefaultUpdateFrequencyMs = 1000;
@@ -17,6 +17,12 @@ public class Plugin : IMoBroPlugin
     private readonly IMoBroScheduler _scheduler;
 
     private readonly ArgusMonitor _argus;
+
+    static Plugin()
+    {
+        Version? _version = typeof(Program).Assembly.GetName().Version;
+        VERSION = _version == null ? "unknown" : _version.ToString(3);
+    }
 
     public Plugin(IMoBroSettings settings, IMoBroService service, IMoBroScheduler scheduler, ILogger logger)
     {

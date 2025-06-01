@@ -31,10 +31,11 @@ public class ArgusMonitor : IDisposable
         ["CPU"] = "true",
         ["GPU"] = "true",
         ["RAM"] = "true",
-        ["Mainboard"] = "true",
+        ["Fan"] = "true",
         ["Drive"] = "true",
         ["Network"] = "true",
         ["Battery"] = "true",
+        ["Temperature"] = "true",
         ["ArgusMonitor"] = "true",
     };
 
@@ -120,7 +121,12 @@ public class ArgusMonitor : IDisposable
     {
         if (_argus_monitor.IsHardwareEnabled("ArgusMonitor"))
         {
-            _service.Register(ArgusMonitorCategory.Synthetic);
+            _service.Register(ArgusMonitorCategory.ArgusMonitor);
+        }
+
+        if (_argus_monitor.IsHardwareEnabled("Temperature"))
+        {
+            _service.Register(ArgusMonitorCategory.Temperature);
         }
     }
 
@@ -144,7 +150,13 @@ public class ArgusMonitor : IDisposable
             }
         }
 
-        void register(string sensorName, string sensorValue, string sensorType, string hardwareType, string sensorGroup, string sensorIndex, string dataIndex)
+        void register(string sensorName,
+                      string sensorValue,
+                      string sensorType,
+                      string hardwareType,
+                      string sensorGroup,
+                      string sensorIndex,
+                      string dataIndex)
         {
             CoreCategory category = ArgusMonitorUtilities.GetCategory(hardwareType);
             CoreMetricType type = ArgusMonitorUtilities.GetMetricType(sensorType);
@@ -155,26 +167,32 @@ public class ArgusMonitor : IDisposable
                 {
                     gpus[sensorIndex] = new();
                 }
-                gpus[sensorIndex].Add(new string[] { sensorName, sensorValue, sensorType, hardwareType, sensorGroup, sensorIndex, dataIndex });
+                gpus[sensorIndex].Add(new string[] { sensorName,
+                                                     sensorValue,
+                                                     sensorType,
+                                                     hardwareType,
+                                                     sensorGroup,
+                                                     sensorIndex,
+                                                     dataIndex });
                 return;
             }
 
-            string groupId = CoreCategory.Cpu == category ? ArgusMonitorUtilities.GroupID(hardwareType, sensorGroup, sensorIndex) : ArgusMonitorUtilities.GroupID(hardwareType, sensorGroup);
+            string groupId = CoreCategory.Cpu == category
+                ? ArgusMonitorUtilities.GroupID(hardwareType, sensorGroup, sensorIndex)
+                : ArgusMonitorUtilities.GroupID(hardwareType, sensorGroup);
 
             string? cpuId = null;
-            Category? cpuCategory = null;
 
             if (CoreCategory.Cpu == category)
             {
                 cpuId = sensorIndex.ToString();
                 if (!cpuIds.Contains(cpuId))
                 {
-                    cpuCategory = MoBroItem
+                    _service.Register(MoBroItem
                         .CreateCategory()
                         .WithId(ArgusMonitorUtilities.SanitizeId("CPU_" + sensorIndex))
                         .WithLabel("CPU [" + sensorIndex + "]")
-                        .Build();
-                    _service.Register(cpuCategory);
+                        .Build());
                     cpuIds.Add(cpuId);
                 }
             }
@@ -191,18 +209,26 @@ public class ArgusMonitor : IDisposable
                            : sensorName)
                 .OfType(type);
 
-            MetricBuilder.IGroupStage categoryStage = "ArgusMonitor" == hardwareType
-                    ? typeStage.OfCategory(ArgusMonitorCategory.Synthetic)
+            MetricBuilder.IGroupStage categoryStage =
+                      "ArgusMonitor" == hardwareType
+                        ? typeStage.OfCategory(ArgusMonitorCategory.ArgusMonitor)
+                    : "Temperature" == hardwareType
+                        ? typeStage.OfCategory(ArgusMonitorCategory.Temperature)
                     : null != cpuId
-                    ? typeStage.OfCategory("CPU_" + cpuId)
-                    : typeStage.OfCategory(category);
+                        ? typeStage.OfCategory("CPU_" + cpuId)
+                        : typeStage.OfCategory(category);
 
             MetricBuilder.IBuildStage groupStage = categoryStage.OfGroup(groupId);
 
             if (sensorType == "Text" || sensorName == "Available Sensors")
             {
                 _service.Register(groupStage.AsStaticValue().Build());
-                _service.UpdateMetricValue(ArgusMonitorUtilities.SensorID(hardwareType, sensorType, sensorGroup, sensorIndex, dataIndex), sensorValue);
+                _service.UpdateMetricValue(ArgusMonitorUtilities.SensorID(hardwareType,
+                                                                          sensorType,
+                                                                          sensorGroup,
+                                                                          sensorIndex,
+                                                                          dataIndex),
+                                           sensorValue);
             }
             else
             {
@@ -269,7 +295,12 @@ public class ArgusMonitor : IDisposable
                     if ("Name" == sensor[0])
                     {
                         _service.Register(groupStage.AsStaticValue().Build());
-                        _service.UpdateMetricValue(ArgusMonitorUtilities.SensorID(sensor[3], sensor[2], sensor[4], sensor[5], sensor[6]), sensor[1]);
+                        _service.UpdateMetricValue(ArgusMonitorUtilities.SensorID(sensor[3],
+                                                                                  sensor[2],
+                                                                                  sensor[4],
+                                                                                  sensor[5],
+                                                                                  sensor[6]),
+                                                   sensor[1]);
                     }
                     else
                     {

@@ -49,14 +49,15 @@ This plugin provides the following configurable settings:
 | Setting              | Default | Description                                                                                                                                              |
 |----------------------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Update frequency     | 1000 ms | The interval (in milliseconds) for reading and updating metrics from shared memory. Lower values allow more frequent updates but may increase CPU usage. |
+| Argus Monitor        | enabled | Enables monitoring and inclusion of info about ArgusMonitor and the API.                                        |
 | Processor            | enabled | Enables monitoring and inclusion of processor (CPU) metrics.                                                                                             |
 | Graphics Card        | enabled | Enables monitoring and inclusion of graphics card (GPU) metrics.                                                                                         |
 | Memory               | enabled | Enables monitoring and inclusion of memory (RAM) metrics.                                                                                                |
-| Motherboard          | enabled | Enables monitoring and inclusion of motherboard metrics.                                                                                                 |
+| Temperature          | enabled | Enables monitoring and inclusion of temperature sensor metrics.                                                                                          |
+| Fan                  | enabled | Enables monitoring and inclusion of fan metrics.                                                                                                         |
 | Drives               | enabled | Enables monitoring and inclusion of drive (HDDs, SSDs, etc.) metrics.                                                                                    |
 | Network              | enabled | Enables monitoring and inclusion of network (NIC) metrics.                                                                                               |
 | Battery              | enabled | Enables monitoring and inclusion of battery metrics.                                                                                                     |
-| Argus Monitor        | enabled | Enables monitoring and inclusion of Argus Monitor Synthetic temperatures and info about ArgusMonitor and the API.                                        |
 | Initialization delay | 10s     | The delay to wait before initialization and querying sensors.                                                                                            |
 | Poll delay           | 1s      | The delay after initialization before polling the sensors for the first time.                                                                            |
 

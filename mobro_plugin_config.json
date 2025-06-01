@@ -50,6 +50,14 @@
     },
     {
       "type": "checkbox",
+      "name": "ArgusMonitor",
+      "label": "settings.argus.title",
+      "description": "settings.argus.desc",
+      "defaultValue": true,
+      "required": false
+    },
+    {
+      "type": "checkbox",
       "name": "CPU",
       "label": "settings.cpu.title",
       "description": "settings.cpu.desc",
@@ -74,9 +82,17 @@
     },
     {
       "type": "checkbox",
-      "name": "Mainboard",
-      "label": "settings.motherboard.title",
-      "description": "settings.motherboard.desc",
+      "name": "Temperature",
+      "label": "settings.temperature.title",
+      "description": "settings.temperature.desc",
+      "defaultValue": true,
+      "required": false
+    },
+    {
+      "type": "checkbox",
+      "name": "Fan",
+      "label": "settings.fan.title",
+      "description": "settings.fan.desc",
       "defaultValue": true,
       "required": false
     },
@@ -101,14 +117,6 @@
       "name": "Battery",
       "label": "settings.battery.title",
       "description": "settings.battery.desc",
-      "defaultValue": true,
-      "required": false
-    },
-        {
-      "type": "checkbox",
-      "name": "ArgusMonitor",
-      "label": "settings.argus.title",
-      "description": "settings.argus.desc",
       "defaultValue": true,
       "required": false
     },

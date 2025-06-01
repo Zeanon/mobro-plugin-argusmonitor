@@ -32,7 +32,7 @@ public static class ArgusMonitorUtilities
             "CPU" => CoreCategory.Cpu,
             "GPU" => CoreCategory.Gpu,
             "RAM" => CoreCategory.Ram,
-            "Mainboard" => CoreCategory.Mainboard,
+            "Fan" => CoreCategory.Fan,
             "Drive" => CoreCategory.Storage,
             "Network" => CoreCategory.Network,
             "Battery" => CoreCategory.Battery,
