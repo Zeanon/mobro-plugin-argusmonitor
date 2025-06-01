@@ -220,7 +220,7 @@ public class ArgusMonitor : IDisposable
 
             MetricBuilder.IBuildStage groupStage = categoryStage.OfGroup(groupId);
 
-            if (sensorType == "Text" || sensorName == "Available Sensors")
+            if (sensorType == "Text")
             {
                 _service.Register(groupStage.AsStaticValue().Build());
                 _service.UpdateMetricValue(ArgusMonitorUtilities.SensorID(hardwareType,
