@@ -21,7 +21,8 @@ public class ArgusMonitor : IDisposable
 
     private readonly IMoBroService _service;
     private readonly ILogger _logger;
-    private readonly ArgusMonitorWrapper.Update _update;
+    private readonly ArgusMonitorWrapper.UpdateFloat _updateFloat;
+    private readonly ArgusMonitorWrapper.UpdateText _updateText;
 
 
     private static readonly string CPU = "CPU";
@@ -44,7 +45,11 @@ public class ArgusMonitor : IDisposable
     {
         _service = service;
         _logger = logger;
-        _update = (string sensorId, string sensorValue) =>
+        _updateFloat = (string sensorId, float sensorValue) =>
+        {
+            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(sensorId), sensorValue);
+        };
+        _updateText = (string sensorId, string sensorValue) =>
         {
             _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(sensorId), sensorValue);
         };
@@ -75,7 +80,7 @@ public class ArgusMonitor : IDisposable
         }
     }
 
-    public void InitTotalSensorCount(int pollingInterval)
+    public void WaitForSensors(int pollingInterval)
     {
         while (_argus_monitor.GetTotalSensorCount() == 0)
         {
@@ -115,6 +120,8 @@ public class ArgusMonitor : IDisposable
                         .AddDetail("pluginVersion", Plugin.VERSION);
             }
         }
+
+        _argus_monitor.Destroy();
     }
 
     public void RegisterCategories()
@@ -130,9 +137,11 @@ public class ArgusMonitor : IDisposable
         }
     }
 
-    public void RegisterItems()
+    public List<Action> RegisterItems()
     {
         bool cpuEnabled = _argus_monitor.IsHardwareEnabled(CPU);
+
+        List<Action> toUpdate = new();
 
         List<string> cpuIds = new();
 
@@ -223,12 +232,15 @@ public class ArgusMonitor : IDisposable
             if (sensorType == "Text")
             {
                 _service.Register(groupStage.AsStaticValue().Build());
-                _service.UpdateMetricValue(ArgusMonitorUtilities.SensorID(hardwareType,
-                                                                          sensorType,
-                                                                          sensorGroup,
-                                                                          sensorIndex,
-                                                                          dataIndex),
-                                           sensorValue);
+                toUpdate.Add(() =>
+                {
+                    _service.UpdateMetricValue(ArgusMonitorUtilities.SensorID(hardwareType,
+                                                                              sensorType,
+                                                                              sensorGroup,
+                                                                              sensorIndex,
+                                                                              dataIndex),
+                                               sensorValue);
+                });
             }
             else
             {
@@ -295,12 +307,15 @@ public class ArgusMonitor : IDisposable
                     if ("Name" == sensor[0])
                     {
                         _service.Register(groupStage.AsStaticValue().Build());
-                        _service.UpdateMetricValue(ArgusMonitorUtilities.SensorID(sensor[3],
-                                                                                  sensor[2],
-                                                                                  sensor[4],
-                                                                                  sensor[5],
-                                                                                  sensor[6]),
-                                                   sensor[1]);
+                        toUpdate.Add(() =>
+                        {
+                            _service.UpdateMetricValue(ArgusMonitorUtilities.SensorID(sensor[3],
+                                                                                      sensor[2],
+                                                                                      sensor[4],
+                                                                                      sensor[5],
+                                                                                      sensor[6]),
+                                                       sensor[1]);
+                        });
                     }
                     else
                     {
@@ -397,10 +412,12 @@ public class ArgusMonitor : IDisposable
                     .Build());
             }
         }
+
+        return toUpdate;
     }
 
     public void UpdateMetricValues()
     {
-        _argus_monitor.UpdateSensorData(_update);
+        _argus_monitor.UpdateSensorData(_updateFloat, _updateText);
     }
 }

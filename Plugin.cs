@@ -2,10 +2,11 @@
 using MoBro.Plugin.SDK;
 using MoBro.Plugin.SDK.Services;
 using System;
+using System.Collections.Generic;
 
 namespace Zeanon.Plugin.ArgusMonitor;
 
-public class Plugin : IMoBroPlugin
+public class Plugin : IMoBroPlugin, IDisposable
 {
     public static readonly string VERSION;
 
@@ -15,6 +16,7 @@ public class Plugin : IMoBroPlugin
 
     private readonly IMoBroSettings _settings;
     private readonly IMoBroScheduler _scheduler;
+    private readonly IMoBroService _service;
 
     private readonly ArgusMonitor _argus;
 
@@ -28,6 +30,7 @@ public class Plugin : IMoBroPlugin
     {
         _settings = settings;
         _scheduler = scheduler;
+        _service = service;
         _argus = new ArgusMonitor(service, logger);
     }
 
@@ -48,17 +51,31 @@ public class Plugin : IMoBroPlugin
         _argus.WaitForArgus(updateFrequency);
 
         // init the total sensor count so we know it for the list initialization
-        _argus.InitTotalSensorCount(updateFrequency);
+        _argus.WaitForSensors(updateFrequency);
 
         // register custom hardware category
         _argus.RegisterCategories();
 
         // register groups and metrics
-        _argus.RegisterItems();
+        List<Action> toUpdate = _argus.RegisterItems();
 
-        // start polling metric values
-        _scheduler.Interval(_argus.UpdateMetricValues,
-            TimeSpan.FromMilliseconds(updateFrequency),
-            TimeSpan.FromSeconds(_settings.GetValue("poll_delay", DefaultInitialDelay)));
+        // oneoff to update static values
+        _scheduler.OneOff(() =>
+        {
+            foreach (Action update in toUpdate)
+            {
+                update();
+            }
+
+            // start polling metric values
+            _scheduler.Interval(_argus.UpdateMetricValues,
+                                TimeSpan.FromMilliseconds(updateFrequency),
+                                TimeSpan.FromMilliseconds(0));
+        }, TimeSpan.FromSeconds(_settings.GetValue("poll_delay", DefaultInitialDelay)));
+    }
+
+    public void Dispose()
+    {
+        _argus.Dispose();
     }
 }

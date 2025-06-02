@@ -37,11 +37,14 @@ public static partial class ArgusMonitorWrapper
                                            [MarshalAs(UnmanagedType.LPStr)] string dataIndex);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
-    public static extern bool UpdateSensorData(this IntPtr t, Update update);
+    public static extern bool UpdateSensorData(this IntPtr t, UpdateFloat update, UpdateText updateText);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void Update([MarshalAs(UnmanagedType.LPStr)] string sensorId,
-                                [MarshalAs(UnmanagedType.LPStr)] string sensorValue);
+    public delegate void UpdateFloat([MarshalAs(UnmanagedType.LPStr)] string sensorId,
+                                [MarshalAs(UnmanagedType.R4)] float sensorValue);
+
+    public delegate void UpdateText([MarshalAs(UnmanagedType.LPStr)] string sensorId,
+                                    [MarshalAs(UnmanagedType.LPStr)] string sensorValue);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
     public static extern bool CheckArgusSignature(this IntPtr t);
@@ -51,5 +54,8 @@ public static partial class ArgusMonitorWrapper
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
     public static extern bool IsHardwareEnabled(this IntPtr t, string type);
+
+    [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
+    public static extern void Destroy(this IntPtr t);
     #endregion
 }
