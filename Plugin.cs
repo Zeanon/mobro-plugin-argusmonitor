@@ -16,7 +16,6 @@ public class Plugin : IMoBroPlugin, IDisposable
 
     private readonly IMoBroSettings _settings;
     private readonly IMoBroScheduler _scheduler;
-    private readonly IMoBroService _service;
 
     private readonly ArgusMonitor _argus;
 
@@ -30,7 +29,6 @@ public class Plugin : IMoBroPlugin, IDisposable
     {
         _settings = settings;
         _scheduler = scheduler;
-        _service = service;
         _argus = new ArgusMonitor(service, logger);
     }
 
