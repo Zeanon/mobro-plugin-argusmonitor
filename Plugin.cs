@@ -41,7 +41,10 @@ public class Plugin : IMoBroPlugin, IDisposable
 
     private void InitArgus()
     {
+        List<Action> toUpdate = new();
         int updateFrequency = _settings.GetValue("update_frequency", DefaultUpdateFrequencyMs);
+
+        // set the settings
         _argus.UpdateSettings(_settings);
 
         // wait for the argus api to connect to Argus Monitor
@@ -57,15 +60,12 @@ public class Plugin : IMoBroPlugin, IDisposable
         _argus.RegisterCategories();
 
         // register groups and metrics
-        List<Action> toUpdate = _argus.RegisterItems();
+        _argus.RegisterItems(toUpdate);
 
         // oneoff to update static values
         _scheduler.OneOff(() =>
         {
-            foreach (Action update in toUpdate)
-            {
-                update();
-            }
+            foreach (Action update in toUpdate) update();
 
             // start polling metric values
             _scheduler.Interval(_argus.UpdateMetricValues,

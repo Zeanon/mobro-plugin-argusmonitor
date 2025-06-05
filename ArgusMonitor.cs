@@ -137,11 +137,9 @@ public class ArgusMonitor : IDisposable
         }
     }
 
-    public List<Action> RegisterItems()
+    public void RegisterItems(ICollection<Action> toUpdate)
     {
         bool cpuEnabled = _argus_monitor.IsHardwareEnabled(CPU);
-
-        List<Action> toUpdate = new();
 
         List<string> cpuIds = new();
 
@@ -412,8 +410,6 @@ public class ArgusMonitor : IDisposable
                     .Build());
             }
         }
-
-        return toUpdate;
     }
 
     public void UpdateMetricValues()
