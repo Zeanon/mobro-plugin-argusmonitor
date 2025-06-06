@@ -10,9 +10,11 @@ It uses a custom [ArgusMonitorLink.dll](https://github.com/Zeanon/ArgusMonitorLi
 
 # Attention
 
-**Breaking Change from 0.1.2 to 0.1.3 and to 0.1.5: I had to modify the sensor IDs slightly to ensure them being truly unique (Argus Monitor did some funky stuff I wasnt aware of but that got pointed out to me, sorry for the inconvenience, this is hopefully the last breaking change in that manner) and synthetic Temperatures now have their own dedicated hardware group so you need to re-select them in your layouts.** <br>
-**On the flip side, you now get some artificial metrics like the max temp of all cores, max multiplier and core clocks (which Argus doesnt expose but can easily be calculated with the FSB frequency and the multiplier) and obviously the max of those, feel free to suggest any other artificial values that can be created with the existing ones.** <br>
-**Another breaking change when updating to 0.2.0, I reworked metric ids and hardware groups to handle multi cpu and multi gpu systems and not have IDs break when you change the name of a fan/sensor in argus monitor.** <br>
+**Breaking Change from 0.1.2 to 0.1.3 and to 0.1.5: I had to modify the sensor IDs slightly to ensure them being truly unique (Argus Monitor did some funky stuff I wasnt aware of but that got pointed out to me, sorry for the inconvenience, this is hopefully the last breaking change in that manner) and synthetic Temperatures now have their own dedicated hardware group so you need to re-select them in your layouts.**
+
+**On the flip side, you now get some artificial metrics like the max temp of all cores, max multiplier and core clocks (which Argus doesnt expose but can easily be calculated with the FSB frequency and the multiplier) and obviously the max of those, feel free to suggest any other artificial values that can be created with the existing ones.**
+
+**Another breaking change when updating to 0.2.0, I reworked metric ids and hardware groups to handle multi cpu and multi gpu systems and not have IDs break when you change the name of a fan/sensor in argus monitor.**
 
 This plugin is in an alpha state rn, it seems to work well for me but it might still contain bugs, if you find any pls feel free to hit me up on the MoBro Discord (LastZeanon).
 
