@@ -35,7 +35,7 @@ This includes data from various devices such as:
 
 - Motherboards
 - Intel and AMD processors
-- NVIDIA and AMD graphics cards
+- AMD, Intel and NVidia graphics cards
 - HDDs, SSDs, and NVMe drives
 - Network cards
 - Synthetic Temperatures
