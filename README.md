@@ -16,6 +16,8 @@ It uses a custom [ArgusMonitorLink.dll](https://github.com/Zeanon/ArgusMonitorLi
 
 **Another breaking change when updating to 0.2.0, I reworked metric ids and hardware groups to handle multi cpu and multi gpu systems and not have IDs break when you change the name of a fan/sensor in argus monitor.**
 
+**If you add/remove a fan or temp sensor in Argus Monitor, your metric ids will be off, there is unfortunately nothing I can do about that as Argus Monitor doesnt expose enough information to reliably detect that.**
+
 This plugin is in an alpha state rn, it seems to work well for me but it might still contain bugs, if you find any pls feel free to hit me up on the MoBro Discord (LastZeanon).
 
 ## Getting Started
