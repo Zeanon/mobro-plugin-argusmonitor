@@ -1,7 +1,9 @@
 ﻿using MoBro.Plugin.SDK.Builders;
 using MoBro.Plugin.SDK.Models.Categories;
 
+
 namespace Zeanon.Plugin.ArgusMonitor.CustomItem;
+
 
 public static class ArgusMonitorCategory
 {

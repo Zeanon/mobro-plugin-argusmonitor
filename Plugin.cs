@@ -21,12 +21,14 @@ public class Plugin : IMoBroPlugin, IDisposable
 
     static Plugin()
     {
-        Version? _version = typeof(Program).Assembly.GetName().Version;
+        Version? _version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
         VERSION = _version == null ? "unknown" : _version.ToString(3);
     }
 
     public Plugin(IMoBroSettings settings, IMoBroService service, IMoBroScheduler scheduler, ILogger logger)
     {
+        logger.LogInformation("Plugin Version: {VERSION}", VERSION);
+
         _settings = settings;
         _scheduler = scheduler;
         _argus = new ArgusMonitor(service, logger);

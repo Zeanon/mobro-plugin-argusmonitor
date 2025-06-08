@@ -17,12 +17,11 @@ namespace Zeanon.Plugin.ArgusMonitor;
 
 public class ArgusMonitor : IDisposable
 {
-    private readonly IntPtr _argus_monitor;
+    private readonly IntPtr _argusMonitorLink;
 
     private readonly IMoBroService _service;
     private readonly ILogger _logger;
     private readonly ArgusMonitorWrapper.UpdateFloat _updateFloat;
-    private readonly ArgusMonitorWrapper.UpdateText _updateText;
 
 
     private static readonly string CPU = "CPU";
@@ -49,24 +48,20 @@ public class ArgusMonitor : IDisposable
         {
             _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(sensorId), sensorValue);
         };
-        _updateText = (string sensorId, string sensorValue) =>
-        {
-            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(sensorId), sensorValue);
-        };
-        _argus_monitor = ArgusMonitorWrapper.Instantiate();
+        _argusMonitorLink = ArgusMonitorWrapper.Create();
     }
 
     public void UpdateSettings(IMoBroSettings settings)
     {
         foreach (KeyValuePair<string, string> setting in Settings)
         {
-            _argus_monitor.SetHardwareEnabled(setting.Key, settings.GetValue(setting.Key, bool.Parse(setting.Value)));
+            _argusMonitorLink.SetHardwareEnabled(setting.Key, settings.GetValue(setting.Key, bool.Parse(setting.Value)));
         }
     }
 
     public void Open(int pollingInterval)
     {
-        while (_argus_monitor.Open() != 0)
+        while (0 != _argusMonitorLink.Open())
         {
             Thread.Sleep(pollingInterval);
         }
@@ -74,7 +69,7 @@ public class ArgusMonitor : IDisposable
 
     public void WaitForArgus(int pollingInterval)
     {
-        while (!_argus_monitor.CheckArgusSignature())
+        while (!_argusMonitorLink.CheckArgusSignature())
         {
             Thread.Sleep(pollingInterval);
         }
@@ -82,7 +77,7 @@ public class ArgusMonitor : IDisposable
 
     public void WaitForSensors(int pollingInterval)
     {
-        while (_argus_monitor.GetTotalSensorCount() == 0)
+        while (0 == _argusMonitorLink.GetTotalSensorCount())
         {
             Thread.Sleep(pollingInterval);
         }
@@ -90,9 +85,9 @@ public class ArgusMonitor : IDisposable
 
     public void Dispose()
     {
-        if (_argus_monitor != IntPtr.Zero)
+        if (IntPtr.Zero != _argusMonitorLink)
         {
-            int errno = _argus_monitor.Close();
+            int errno = _argusMonitorLink.Close();
 
             switch (errno)
             {
@@ -121,17 +116,17 @@ public class ArgusMonitor : IDisposable
             }
         }
 
-        _argus_monitor.Destroy();
+        _argusMonitorLink.Destroy();
     }
 
     public void RegisterCategories()
     {
-        if (_argus_monitor.IsHardwareEnabled("ArgusMonitor"))
+        if (_argusMonitorLink.IsHardwareEnabled("ArgusMonitor"))
         {
             _service.Register(ArgusMonitorCategory.ArgusMonitor);
         }
 
-        if (_argus_monitor.IsHardwareEnabled("Temperature"))
+        if (_argusMonitorLink.IsHardwareEnabled("Temperature"))
         {
             _service.Register(ArgusMonitorCategory.Temperature);
         }
@@ -139,7 +134,7 @@ public class ArgusMonitor : IDisposable
 
     public void RegisterItems(ICollection<Action> toUpdate)
     {
-        bool cpuEnabled = _argus_monitor.IsHardwareEnabled(CPU);
+        bool cpuEnabled = _argusMonitorLink.IsHardwareEnabled(CPU);
 
         List<string> cpuIds = new();
 
@@ -184,7 +179,8 @@ public class ArgusMonitor : IDisposable
                 return;
             }
 
-            string groupId = CoreCategory.Cpu == category
+            string groupId =
+                CoreCategory.Cpu == category
                 ? ArgusMonitorUtilities.GroupID(hardwareType, sensorGroup, sensorIndex)
                 : ArgusMonitorUtilities.GroupID(hardwareType, sensorGroup);
 
@@ -227,7 +223,7 @@ public class ArgusMonitor : IDisposable
 
             MetricBuilder.IBuildStage groupStage = categoryStage.OfGroup(groupId);
 
-            if (sensorType == "Text")
+            if ("Text" == sensorType)
             {
                 _service.Register(groupStage.AsStaticValue().Build());
                 toUpdate.Add(() =>
@@ -250,7 +246,7 @@ public class ArgusMonitor : IDisposable
             if (cpuEnabled
                 && CoreMetricType.Multiplier == type
                 && null != cpuId
-                && sensorGroup == "Multiplier")
+                && "Multiplier" == sensorGroup)
             {
                 addGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Temperature.ToString() + "_" + cpuId), "Temperature");
                 addGroup(ArgusMonitorUtilities.SanitizeId(CPU + "_" + CommonGroup.Multiplier.ToString() + "_" + cpuId), "Multiplier");
@@ -258,7 +254,7 @@ public class ArgusMonitor : IDisposable
 
                 _service.Register(MoBroItem
                     .CreateMetric()
-                    .WithId(ArgusMonitorUtilities.CoreClockID(hardwareType, sensorIndex, dataIndex))
+                    .WithId(ArgusMonitorUtilities.SensorID(hardwareType, "Frequency", CommonGroup.Core_Clock.ToString(), sensorIndex, dataIndex))
                     .WithLabel(sensorName + " Clock")
                     .OfType(CoreMetricType.Frequency)
                     .OfCategory("CPU_" + cpuId)
@@ -268,7 +264,7 @@ public class ArgusMonitor : IDisposable
         }
 
         // Register all metrics
-        _argus_monitor.GetSensorData(register);
+        _argusMonitorLink.GetSensorData(register);
 
         foreach (KeyValuePair<string, List<string[]>> gpu in gpus)
         {
@@ -414,6 +410,6 @@ public class ArgusMonitor : IDisposable
 
     public void UpdateMetricValues()
     {
-        _argus_monitor.UpdateSensorData(_updateFloat, _updateText);
+        _argusMonitorLink.UpdateSensorData(_updateFloat);
     }
 }

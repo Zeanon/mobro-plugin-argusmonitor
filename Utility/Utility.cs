@@ -1,8 +1,9 @@
 ﻿using MoBro.Plugin.SDK.Enums;
 using System.Text.RegularExpressions;
-using Zeanon.Plugin.ArgusMonitor.Enums;
+
 
 namespace Zeanon.Plugin.ArgusMonitor.Utility;
+
 
 public static class ArgusMonitorUtilities
 {
@@ -43,11 +44,6 @@ public static class ArgusMonitorUtilities
     public static string SanitizeId(string id)
     {
         return IdSanitationRegex.Replace(id, "");
-    }
-
-    public static string CoreClockID(string hardwareType, string sensorIndex, string dataIndex)
-    {
-        return SanitizeId(hardwareType + "_Frequency_" + CommonGroup.Core_Clock.ToString() + "_" + sensorIndex + "_" + dataIndex);
     }
 
     public static string SensorID(string hardwareType, string sensorType, string sensorGroup, string sensorIndex, string dataIndex)
