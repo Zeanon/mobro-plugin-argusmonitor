@@ -56,7 +56,7 @@ This plugin provides the following configurable settings:
 | Drives               | enabled | Enables monitoring and inclusion of drive (HDDs, SSDs, etc.) metrics.                                                                                    |
 | Network              | enabled | Enables monitoring and inclusion of network (NIC) metrics.                                                                                               |
 | Battery              | enabled | Enables monitoring and inclusion of battery metrics.                                                                                                     |
-| Initialization delay | 10s     | The delay to wait before initialization and querying sensors.                                                                                            |
+| Initialization delay | 0s      | The delay to wait before initialization and querying sensors.                                                                                            |
 | Poll delay           | 1s      | The delay after initialization before polling the sensors for the first time.                                                                            |
 
 ## SDK

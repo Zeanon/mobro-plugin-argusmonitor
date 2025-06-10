@@ -5,6 +5,15 @@
   "description": "MoBro ArgusMonitor plugin",
   "assembly": "Plugin.ArgusMonitor.dll",
   "localization": "Resources/Localization",
+  "repository": "https://github.com/Zeanon/mobro-plugin-argusmonitor",
+  "homepage": "https://github.com/Zeanon/mobro-plugin-argusmonitor",
+  "tags": [
+    "argus",
+    "monitor",
+    "argusmonitor",
+    "argus_monitor",
+    "system"
+  ],
   "settings": [
     {
       "type": "select",
