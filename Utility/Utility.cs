@@ -46,17 +46,12 @@ public static class ArgusMonitorUtilities
         return IdSanitationRegex.Replace(id, "");
     }
 
-    public static string SensorID(string hardwareType, string sensorType, string sensorGroup, string sensorIndex, string dataIndex)
-    {
-        return SanitizeId(hardwareType + "_" + sensorType + "_" + sensorGroup + "_" + sensorIndex + "_" + dataIndex);
-    }
-
     public static string GroupID(string hardwareType, string sensorGroup)
     {
         return SanitizeId(hardwareType + "_" + sensorGroup);
     }
 
-    public static string GroupID(string hardwareType, string sensorGroup, string sensorIndex)
+    public static string GroupID(string hardwareType, string sensorGroup, int sensorIndex)
     {
         return SanitizeId(hardwareType + "_" + sensorGroup + "_" + sensorIndex);
     }

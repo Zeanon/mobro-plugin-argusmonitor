@@ -29,13 +29,14 @@ public static partial class ArgusMonitorWrapper
     public static extern void GetSensorData(this IntPtr argusMonitorLinkPtr, ProcessSensorData processSensorData);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void ProcessSensorData([MarshalAs(UnmanagedType.LPStr)] string sensorName,
+    public delegate void ProcessSensorData([MarshalAs(UnmanagedType.LPStr)] string sensorId,
+                                           [MarshalAs(UnmanagedType.LPStr)] string sensorName,
                                            [MarshalAs(UnmanagedType.LPStr)] string sensorValue,
                                            [MarshalAs(UnmanagedType.LPStr)] string sensorType,
                                            [MarshalAs(UnmanagedType.LPStr)] string hardwareType,
                                            [MarshalAs(UnmanagedType.LPStr)] string sensorGroup,
-                                           [MarshalAs(UnmanagedType.LPStr)] string sensorIndex,
-                                           [MarshalAs(UnmanagedType.LPStr)] string dataIndex);
+                                           [MarshalAs(UnmanagedType.U4)] int sensorIndex,
+                                           [MarshalAs(UnmanagedType.U4)] int dataIndex);
 
     [DllImport(_dllImportPath, CallingConvention = CallingConvention.Cdecl)]
     public static extern bool UpdateSensorData(this IntPtr argusMonitorLinkPtr, UpdateFloat update);
