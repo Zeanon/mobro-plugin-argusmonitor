@@ -159,7 +159,8 @@ public class ArgusMonitor : IDisposable
                       string hardwareType,
                       string sensorGroup,
                       int sensorIndex,
-                      int dataIndex)
+                      int dataIndex,
+                      bool staticValue)
         {
             CoreCategory category = ArgusMonitorUtilities.GetCategory(hardwareType);
             CoreMetricType type = ArgusMonitorUtilities.GetMetricType(sensorType);
@@ -224,7 +225,7 @@ public class ArgusMonitor : IDisposable
 
             MetricBuilder.IBuildStage groupStage = categoryStage.OfGroup(groupId);
 
-            if ("Text" == sensorType)
+            if (staticValue)
             {
                 _service.Register(groupStage.AsStaticValue().Build());
                 toUpdate.Add(() =>
@@ -301,7 +302,7 @@ public class ArgusMonitor : IDisposable
                         toUpdate.Add(() =>
                         {
                             _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(sensor[0]),
-                                                       sensor[1]);
+                                                       sensor[2]);
                         });
                     }
                     else
