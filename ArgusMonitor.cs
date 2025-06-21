@@ -269,7 +269,7 @@ public class ArgusMonitor : IDisposable
             Category? gpuCategory = null;
             foreach (string[] sensor in gpu.Value)
             {
-                // sensor: sensorName, sensorValue, sensorType, hardwareType, sensorGroup, sensorIndex, dataIndex
+                // sensor: sensorId, sensorName, sensorValue, sensorType, hardwareType, sensorGroup, sensorIndex
                 if ("Name" == sensor[1])
                 {
                     gpuCategory = MoBroItem
