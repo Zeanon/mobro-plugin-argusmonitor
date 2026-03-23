@@ -23,7 +23,6 @@ public class ArgusMonitor : IDisposable
     private readonly ILogger _logger;
     private readonly ArgusMonitorWrapper.UpdateFloat _updateFloat;
 
-
     private static readonly string CPU = "CPU";
 
     public static readonly Dictionary<string, string> Settings = new()
@@ -136,10 +135,10 @@ public class ArgusMonitor : IDisposable
     {
         bool cpuEnabled = _argusMonitorLink.IsHardwareEnabled(CPU);
 
-        List<string> cpuIds = new();
+        List<string> cpuIds = [];
 
         // to ensure we are only registering groups once
-        List<string> groups = new();
+        List<string> groups = [];
 
         Dictionary<int, List<string[]>> gpus = new();
 
@@ -209,9 +208,9 @@ public class ArgusMonitor : IDisposable
                 .WithId(ArgusMonitorUtilities.SanitizeId(sensorId))
                 .WithLabel(CoreCategory.Network == category
                            ? dataIndex == 0
-                           ? sensorName + " (Up)"
-                           : sensorName + " (Down)"
-                           : sensorName)
+                           ? sensorName + " (Upload)"
+                           : sensorName + " (Download)"
+                           : ArgusMonitorUtilities.SanitizeName(sensorName, type, category))
                 .OfType(type);
 
             MetricBuilder.IGroupStage categoryStage =
@@ -237,6 +236,18 @@ public class ArgusMonitor : IDisposable
             else
             {
                 _service.Register(groupStage.Build());
+                try
+                {
+                    if (Convert.ToDouble(sensorValue) == 0)
+                    {
+                        toUpdate.Add(() =>
+                        {
+                            _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(sensorId),
+                                                       sensorValue);
+                        });
+                    }
+                }
+                catch (System.FormatException) { }
             }
 
 
@@ -308,6 +319,18 @@ public class ArgusMonitor : IDisposable
                     else
                     {
                         _service.Register(groupStage.Build());
+                        try
+                        {
+                            if (Convert.ToDouble(sensor[2]) == 0)
+                            {
+                                toUpdate.Add(() =>
+                                {
+                                    _service.UpdateMetricValue(ArgusMonitorUtilities.SanitizeId(sensor[0]),
+                                                               sensor[2]);
+                                });
+                            }
+                        }
+                        catch (System.FormatException) { }
                     }
                 }
             }

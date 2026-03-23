@@ -8,6 +8,7 @@ namespace Zeanon.Plugin.ArgusMonitor.Utility;
 public static class ArgusMonitorUtilities
 {
     private static readonly Regex IdSanitationRegex = new(@"[^\w\.\-]", RegexOptions.Compiled);
+    private static readonly Regex NameSanitationRegex = new(@"\d+$", RegexOptions.Compiled);
 
     public static CoreMetricType GetMetricType(string sensorType)
     {
@@ -54,5 +55,14 @@ public static class ArgusMonitorUtilities
     public static string GroupID(string hardwareType, string sensorGroup, int sensorIndex)
     {
         return SanitizeId(hardwareType + "_" + sensorGroup + "_" + sensorIndex);
+    }
+
+    public static string SanitizeName(string name, CoreMetricType metricType, CoreCategory category)
+    {
+        if (CoreCategory.Cpu == category && CoreMetricType.Power == metricType)
+        {
+            return NameSanitationRegex.Replace(name, "");
+        }
+        return name;
     }
 }
