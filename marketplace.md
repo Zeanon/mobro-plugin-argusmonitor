@@ -10,7 +10,7 @@ It uses a custom [ArgusMonitorLink.dll](https://github.com/Zeanon/ArgusMonitorLi
 
 # Attention
 
-**Breaking Change at 0.3.2/0.3.3: ArgusMonitor changed their API so I had to adjust as well, make sure you are at the latest version of ArgusMonitor before you update**
+**Breaking Change at 0.3.2/0.3.3: ArgusMonitor changed their API with update 7.3.05 so I had to adjust as well, make sure you are at the latest version of ArgusMonitor before you update**
 
 **Breaking Change from 0.1.2 to 0.1.3 and to 0.1.5: I had to modify the sensor IDs slightly to ensure them being truly unique (Argus Monitor did some funky stuff I wasnt aware of but that got pointed out to me, sorry for the inconvenience, this is hopefully the last breaking change in that manner) and synthetic Temperatures now have their own dedicated hardware group so you need to re-select them in your layouts.**
 
